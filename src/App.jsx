@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   ShieldAlert, 
   Lock, 
@@ -28,6 +28,9 @@ export default function App() {
   
   const [currentYear, setCurrentYear] = useState(2026);
   const [currentMonth, setCurrentMonth] = useState(11);
+  const [isMatrixHighlighted, setIsMatrixHighlighted] = useState(false);
+
+  const matrixRef = useRef(null);
 
   useEffect(() => {
     try {
@@ -69,11 +72,11 @@ export default function App() {
     serum: { name: '培養血清', emoji: '🧪', color: 'border-emerald-500 text-emerald-400 bg-emerald-950/30' }
   };
 
+  // 本日の日付（2026年11月13日）
   const realTodayYear = 2026;
   const realTodayMonth = 11;
-  const realTodayDay = 12;
+  const realTodayDay = 13;
 
-  // 選択中年月の日数と、1日目の曜日（0=日, 1=月...）を計算
   const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
   const firstDayOfWeek = new Date(currentYear, currentMonth - 1, 1).getDay();
 
@@ -101,9 +104,35 @@ export default function App() {
     }
   };
 
-  const handleDayClick = (day) => {
+  const isFutureDate = (year, month, day) => {
+    if (year > realTodayYear) return true;
+    if (year === realTodayYear && month > realTodayMonth) return true;
+    if (year === realTodayYear && month === realTodayMonth && day > realTodayDay) return true;
+    return false;
+  };
+
+  const scrollToMatrix = () => {
+    setIsMatrixHighlighted(true);
+    setTimeout(() => {
+      setIsMatrixHighlighted(false);
+    }, 1000);
+
+    setTimeout(() => {
+      if (matrixRef.current) {
+        matrixRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 50);
+  };
+
+  const handleCalendarDayClick = (day) => {
+    if (isFutureDate(currentYear, currentMonth, day)) {
+      playSound('click');
+      return;
+    }
+
     playSound('click');
     const dateKey = `${currentYear}-${currentMonth}-${day}`;
+    
     setLogs(prev => {
       const newLogs = { ...prev };
       if (newLogs[dateKey] === selectedReagent) {
@@ -113,6 +142,12 @@ export default function App() {
       }
       return newLogs;
     });
+
+    scrollToMatrix();
+  };
+
+  const handleAdministerToday = () => {
+    handleCalendarDayClick(realTodayDay);
   };
 
   const todayKey = `${realTodayYear}-${realTodayMonth}-${realTodayDay}`;
@@ -133,7 +168,7 @@ export default function App() {
   const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
 
   return (
-    <div className="max-w-[480px] mx-auto min-h-screen bg-[#090a0f] text-red-500 font-mono relative overflow-x-hidden pb-12 select-none border-x border-red-950 shadow-2xl">
+    <div className="max-w-[480px] mx-auto min-h-screen bg-[#090a0f] text-red-500 font-mono relative overflow-x-hidden pb-16 select-none border-x border-red-950 shadow-2xl">
       
       {/* CRT走査線エフェクト */}
       <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] z-50 opacity-60" />
@@ -217,7 +252,7 @@ export default function App() {
               <div>
                 <p className="text-xs text-red-300 mb-3">感染進行を抑制するため、本日のプロトコルを実行してください。</p>
                 <button
-                  onClick={() => handleDayClick(realTodayDay)}
+                  onClick={handleAdministerToday}
                   className="w-full py-3.5 px-4 rounded-lg bg-gradient-to-r from-red-700 via-red-600 to-red-800 text-white font-bold text-sm tracking-widest border border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)] flex items-center justify-center gap-2 active:scale-[0.98] transition"
                 >
                   <span className="text-lg">{reagents[selectedReagent].emoji}</span>
@@ -247,8 +282,15 @@ export default function App() {
           </div>
         </div>
 
-        {/* 曜日表示付きカレンダー形式投薬記録表 */}
-        <div className="bg-[#0b0c12] border border-red-900/60 rounded-xl p-4 shadow-lg">
+        {/* カレンダー記録表 */}
+        <div 
+          ref={matrixRef}
+          className={`bg-[#0b0c12] border rounded-xl p-4 shadow-lg transition-all duration-700 scroll-mt-24 ${
+            isMatrixHighlighted 
+              ? 'border-red-400 bg-red-950/60 scale-[1.02] shadow-[0_0_35px_rgba(239,68,68,0.7)]' 
+              : 'border-red-900/60'
+          }`}
+        >
           <div className="text-center mb-3">
             <div className="text-[10px] tracking-widest text-red-500 uppercase font-semibold">Clinical Trial Matrix</div>
             <div className="flex items-center justify-center gap-3 mt-1 text-sm font-bold text-red-400">
@@ -290,35 +332,42 @@ export default function App() {
             ))}
           </div>
 
-          {/* カレンダーグリッド（曜日合わせの空セル ＋ 日付セル） */}
+          {/* カレンダーグリッド */}
           <div className="grid grid-cols-7 gap-1.5">
-            {/* 1日までの空白セル */}
             {Array.from({ length: firstDayOfWeek }, (_, i) => (
               <div key={`empty-${i}`} className="aspect-square" />
             ))}
 
-            {/* 各日付セル */}
             {Array.from({ length: daysInMonth }, (_, i) => {
               const day = i + 1;
               const dateKey = `${currentYear}-${currentMonth}-${day}`;
               const registeredReagent = logs[dateKey];
               const isToday = currentYear === realTodayYear && currentMonth === realTodayMonth && day === realTodayDay;
+              const isFuture = isFutureDate(currentYear, currentMonth, day);
 
               return (
                 <button
                   key={day}
-                  onClick={() => handleDayClick(day)}
+                  onClick={() => handleCalendarDayClick(day)}
+                  disabled={isFuture}
                   className={`aspect-square rounded-lg border flex flex-col items-center justify-center relative transition ${
-                    registeredReagent
-                      ? 'border-red-500 bg-red-950/60 text-red-200 shadow-[0_0_8px_rgba(239,68,68,0.3)]'
-                      : isToday
-                        ? 'border-red-500 bg-red-950/30 text-red-400 ring-1 ring-red-500'
-                        : 'border-red-950 bg-black/50 text-red-600 hover:border-red-800'
+                    isFuture
+                      ? 'border-red-950/50 bg-black/30 text-red-700/60 opacity-60'
+                      : registeredReagent
+                        ? 'border-red-500 bg-red-950/60 text-red-200 shadow-[0_0_8px_rgba(239,68,68,0.3)]'
+                        : isToday
+                          ? 'border-red-500 bg-red-950/30 text-red-400 ring-1 ring-red-500'
+                          : 'border-red-950 bg-black/50 text-red-600 hover:border-red-800'
                   }`}
                 >
                   <span className={`text-[9px] font-bold ${isToday ? 'underline' : ''}`}>{String(day).padStart(2, '0')}</span>
                   <span className="mt-0.5 text-xs">
-                    {registeredReagent ? reagents[registeredReagent].emoji : <span className="text-[8px] text-red-800">未</span>}
+                    {registeredReagent 
+                      ? reagents[registeredReagent].emoji 
+                      : isFuture 
+                        ? <Lock className="w-3 h-3 text-red-800/80" /> 
+                        : <span className="text-[8px] text-red-800">未</span>
+                    }
                   </span>
                 </button>
               );
