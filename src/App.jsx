@@ -23,22 +23,23 @@ const REAGENT_TYPES = [
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
 const STORAGE_KEYS = {
-  LOGS: 'vital_protocol_logs_v9',
-  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v9',
-  SUBJECT_NAME: 'vital_protocol_subject_name_v9',
-  SOUND_ENABLED: 'vital_protocol_sound_enabled_v9',
+  LOGS: 'vital_protocol_logs_v10',
+  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v10',
+  SUBJECT_NAME: 'vital_protocol_subject_name_v10',
+  SOUND_ENABLED: 'vital_protocol_sound_enabled_v10',
 };
 
 export default function App() {
-  const [realToday] = useState(() => new Date(2026, 10, 13)); // 2026年11月13日
+  // 固定値ではなく、実際の現在日時をリアルタイムで取得
+  const [realToday, setRealToday] = useState(() => new Date());
 
   const [logs, setLogs] = useState({});
   const [selectedReagent, setSelectedReagent] = useState('syringe');
   const [subjectName, setSubjectName] = useState('');
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  const [viewYear, setViewYear] = useState(2026);
-  const [viewMonth, setViewMonth] = useState(10); // 11月
+  const [viewYear, setViewYear] = useState(() => new Date().getFullYear());
+  const [viewMonth, setViewMonth] = useState(() => new Date().getMonth());
 
   const [isInjecting, setIsInjecting] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
@@ -51,6 +52,17 @@ export default function App() {
   const realTodayDay = realToday.getDate();
 
   const todayKey = `${realTodayYear}-${realTodayMonth}-${realTodayDay}`;
+
+  // 1分ごとに日付の変更をチェックして自動更新
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      if (now.getDate() !== realToday.getDate() || now.getMonth() !== realToday.getMonth() || now.getFullYear() !== realToday.getFullYear()) {
+        setRealToday(now);
+      }
+    }, 60000);
+    return () => clearInterval(timer);
+  }, [realToday]);
 
   useEffect(() => {
     try {
@@ -291,7 +303,6 @@ export default function App() {
   return (
     <div className="shutter-bg" style={{ minHeight: '100vh', color: '#F3F4F6', fontFamily: 'monospace', paddingBottom: '3rem' }}>
       <style>{`
-        /* シャッター・スキャンライン風のテクスチャー背景 */
         .shutter-bg {
           background-color: #080303;
           background-image: linear-gradient(
@@ -372,7 +383,7 @@ export default function App() {
           <Activity className="animate-blink-slow" style={{ width: '22px', height: '22px', color: '#EF4444' }} />
         </div>
 
-        {/* スタッツ（左右レイアウト） */}
+        {/* スタッツ */}
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px' }}>
           
           <div style={{ backgroundColor: '#0F0505', borderRadius: '12px', padding: '16px', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', gap: '12px' }}>
