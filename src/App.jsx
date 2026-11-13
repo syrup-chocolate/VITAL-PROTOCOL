@@ -7,10 +7,9 @@ import {
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
-  Award,
-  Sparkles,
-  RotateCcw,
-  X,
+  AlertTriangle,
+  Activity,
+  Syringe,
   Lock
 } from 'lucide-react';
 
@@ -24,17 +23,17 @@ const REAGENT_TYPES = [
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
 const STORAGE_KEYS = {
-  LOGS: 'vital_protocol_logs_v1',
-  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v1',
-  SUBJECT_NAME: 'vital_protocol_subject_name_v1',
-  SOUND_ENABLED: 'vital_protocol_sound_enabled_v1',
+  LOGS: 'vital_protocol_logs_v3',
+  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v3',
+  SUBJECT_NAME: 'vital_protocol_subject_name_v3',
+  SOUND_ENABLED: 'vital_protocol_sound_enabled_v3',
 };
 
 export default function App() {
   const [realToday] = useState(() => new Date(2026, 10, 13)); // 2026年11月13日
 
   const [logs, setLogs] = useState({});
-  const [selectedReagent, setSelectedReagent] = useState('capsule');
+  const [selectedReagent, setSelectedReagent] = useState('syringe');
   const [subjectName, setSubjectName] = useState('');
   const [soundEnabled, setSoundEnabled] = useState(true);
 
@@ -141,7 +140,7 @@ export default function App() {
     }
   };
 
-  // 連続日数の正しい計算ロジック
+  // 連続日数の正しい計算ロジック（途切れたらそこでストップ）
   const calculateStreak = () => {
     let streak = 0;
     let cursor = new Date(realTodayYear, realTodayMonth - 1, realTodayDay);
@@ -251,95 +250,144 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#0A0A0A', color: '#EF4444', fontFamily: 'monospace', paddingBottom: '3rem' }}>
-      <header style={{ width: '100%', backgroundColor: '#140A0A', borderBottom: '1px solid #2A1212', position: 'sticky', top: 0, zIndex: 30 }}>
-        <div style={{ maxWidth: '32rem', margin: '0 auto', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '22px' }}>☣️</span>
-            <div>
-              <p style={{ fontSize: '10px', color: '#9CA3AF', margin: 0, letterSpacing: '0.05em' }}>MEDICAL RESEARCH // LAB-OS</p>
-              <h1 style={{ fontSize: '14px', fontWeight: 900, color: '#EF4444', letterSpacing: '0.1em', margin: 0 }}>
-                VITAL PROTOCOL // DOSAGE LOG
-              </h1>
-            </div>
+    <div style={{ minHeight: '100vh', backgroundColor: '#0A0A0A', color: '#F3F4F6', fontFamily: 'monospace', paddingBottom: '3rem' }}>
+      <style>{`
+        @keyframes pulseGlow {
+          0% { box-shadow: 0 0 5px rgba(239,68,68,0.2); }
+          50% { box-shadow: 0 0 20px rgba(239,68,68,0.6); }
+          100% { box-shadow: 0 0 5px rgba(239,68,68,0.2); }
+        }
+        .hazard-border {
+          border: 1px solid #7F1D1D;
+          background: repeating-linear-gradient(
+            45deg,
+            #140505,
+            #140505 10px,
+            #1C0808 10px,
+            #1C0808 20px
+          );
+        }
+      `}</style>
+
+      {/* トップハザードバー */}
+      <div className="hazard-border" style={{ width: '100%', height: '8px' }} />
+
+      {/* ヘッダー */}
+      <header style={{ width: '100%', backgroundColor: '#0F0505', borderBottom: '1px solid #7F1D1D', position: 'sticky', top: 0, zIndex: 30 }}>
+        <div style={{ maxWidth: '32rem', margin: '0 auto', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <p style={{ fontSize: '9px', color: '#9CA3AF', margin: 0, letterSpacing: '0.1em' }}>MEDICAL RESEARCH // LAB-OS</p>
+            <h1 style={{ fontSize: '13px', fontWeight: 900, color: '#EF4444', letterSpacing: '0.12em', margin: 0 }}>
+              VITAL PROTOCOL // DOSAGE LOG
+            </h1>
           </div>
-          <button onClick={toggleSound} style={{ background: 'transparent', border: '1px solid #2A1212', borderRadius: '6px', padding: '6px', color: '#9CA3AF', cursor: 'pointer' }}>
+          <button
+            onClick={toggleSound}
+            style={{ padding: '6px', borderRadius: '4px', background: '#1A0808', border: '1px solid #7F1D1D', cursor: 'pointer', color: '#EF4444' }}
+          >
             {soundEnabled ? <Volume2 style={{ width: '18px', height: '18px' }} /> : <VolumeX style={{ width: '18px', height: '18px' }} />}
           </button>
         </div>
       </header>
 
       {toastMessage && (
-        <div style={{ position: 'fixed', top: '64px', left: '50%', transform: 'translateX(-50%)', zIndex: 50, backgroundColor: '#B91C1C', color: '#FFF', fontSize: '12px', fontWeight: 700, padding: '8px 16px', borderRadius: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+        <div style={{ position: 'fixed', top: '64px', left: '50%', transform: 'translateX(-50%)', zIndex: 50, backgroundColor: '#DC2626', color: '#FFF', fontSize: '12px', fontWeight: 700, padding: '8px 16px', borderRadius: '4px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', whiteSpace: 'nowrap' }}>
           {toastMessage}
         </div>
       )}
 
-      <main style={{ maxWidth: '32rem', margin: '0 auto', padding: '20px 16px 0', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {/* テレメトリーステータス */}
-        <div style={{ backgroundColor: '#140A0A', borderRadius: '12px', padding: '12px 16px', border: '1px solid #2A1212', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '12px' }}>⚠️</span>
-            <span style={{ fontSize: '11px', color: '#9CA3AF', fontWeight: 700 }}>VITAL TELEMETRY:</span>
-            <span style={{ fontSize: '11px', color: '#EF4444', fontWeight: 900 }}>STABLE / {isTodayDone ? 'DOSAGE CONFIRMED' : 'PENDING'}</span>
+      <main style={{ maxWidth: '32rem', margin: '0 auto', padding: '16px 16px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        
+        {/* VITAL TELEMETRY ステータスカード */}
+        <div style={{ backgroundColor: '#0F0505', borderRadius: '8px', padding: '14px 16px', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <AlertTriangle style={{ width: '18px', height: '18px', color: '#EF4444' }} />
+            <div>
+              <p style={{ fontSize: '10px', color: '#9CA3AF', margin: 0, letterSpacing: '0.05em' }}>VITAL TELEMETRY</p>
+              <p style={{ fontSize: '12px', fontWeight: 900, color: isTodayDone ? '#34D399' : '#EF4444', margin: '2px 0 0 0', letterSpacing: '0.05em' }}>
+                STATUS: {isTodayDone ? 'STABLE / DOSAGE CONFIRMED' : 'CRITICAL / DOSAGE REQUIRED'}
+              </p>
+            </div>
           </div>
+          <Activity style={{ width: '20px', height: '20px', color: '#EF4444' }} />
         </div>
 
-        {/* スタッツ */}
+        {/* スタッツ（SURVIVAL STREAK & TOTAL DOSES） */}
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px' }}>
-          <div style={{ backgroundColor: '#140A0A', borderRadius: '12px', padding: '16px', border: '1px solid #2A1212' }}>
-            <p style={{ fontSize: '10px', color: '#9CA3AF', margin: 0, fontWeight: 700, letterSpacing: '0.05em' }}>SURVIVAL STREAK 連続投与日数</p>
-            <p style={{ fontSize: '24px', fontWeight: 900, color: '#EF4444', margin: '4px 0 0 0' }}>
-              {streakCount} <span style={{ fontSize: '12px', color: '#9CA3AF' }}>DAYS</span>
+          <div style={{ backgroundColor: '#0F0505', borderRadius: '8px', padding: '14px', border: '1px solid #7F1D1D', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '10px', color: '#9CA3AF', fontWeight: 700, letterSpacing: '0.05em' }}>SURVIVAL STREAK</span>
+              <Flame style={{ width: '16px', height: '16px', color: '#EF4444' }} />
+            </div>
+            <p style={{ fontSize: '10px', color: '#6B7280', margin: '2px 0 6px 0' }}>連続投与日数</p>
+            <p style={{ fontSize: '22px', fontWeight: 900, color: '#EF4444', margin: 0 }}>
+              {streakCount} <span style={{ fontSize: '12px', fontWeight: 700, color: '#9CA3AF' }}>DAYS</span>
             </p>
           </div>
-          <div style={{ backgroundColor: '#140A0A', borderRadius: '12px', padding: '16px', border: '1px solid #2A1212' }}>
-            <p style={{ fontSize: '10px', color: '#9CA3AF', margin: 0, fontWeight: 700, letterSpacing: '0.05em' }}>TOTAL DOSES 通算投薬数</p>
-            <p style={{ fontSize: '24px', fontWeight: 900, color: '#EF4444', margin: '4px 0 0 0' }}>
-              {totalDoses} <span style={{ fontSize: '12px', color: '#9CA3AF' }}>UNITS</span>
+
+          <div style={{ backgroundColor: '#0F0505', borderRadius: '8px', padding: '14px', border: '1px solid #7F1D1D', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '10px', color: '#9CA3AF', fontWeight: 700, letterSpacing: '0.05em' }}>TOTAL DOSES</span>
+              <Syringe style={{ width: '16px', height: '16px', color: '#EF4444' }} />
+            </div>
+            <p style={{ fontSize: '10px', color: '#6B7280', margin: '2px 0 6px 0' }}>通算投薬数</p>
+            <p style={{ fontSize: '22px', fontWeight: 900, color: '#EF4444', margin: 0 }}>
+              {totalDoses} <span style={{ fontSize: '12px', fontWeight: 700, color: '#9CA3AF' }}>UNITS</span>
             </p>
           </div>
         </section>
 
-        {/* チェックインカード */}
-        <section style={{ backgroundColor: '#140A0A', borderRadius: '16px', padding: '20px', border: '1px solid #2A1212', textAlign: 'center' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '11px', color: '#9CA3AF' }}>DATE: {realTodayYear} . {realTodayMonth} . {realTodayDay}</span>
-            <span style={{ fontSize: '10px', color: '#EF4444', border: '1px solid #2A1212', padding: '2px 6px', borderRadius: '4px' }}>SECURE TERMINAL</span>
+        {/* メインアクションカード（ADMINISTER DOSE） */}
+        <section style={{ backgroundColor: '#0F0505', borderRadius: '12px', padding: '18px', border: '1px solid #7F1D1D', position: 'relative' }}>
+          <div style={{ position: 'absolute', top: '8px', left: '8px', width: '6px', height: '6px', borderTop: '2px solid #EF4444', borderLeft: '2px solid #EF4444' }} />
+          <div style={{ position: 'absolute', top: '8px', right: '8px', width: '6px', height: '6px', borderTop: '2px solid #EF4444', borderRight: '2px solid #EF4444' }} />
+          <div style={{ position: 'absolute', bottom: '8px', left: '8px', width: '6px', height: '6px', borderBottom: '2px solid #EF4444', borderLeft: '2px solid #EF4444' }} />
+          <div style={{ position: 'absolute', bottom: '8px', right: '8px', width: '6px', height: '6px', borderBottom: '2px solid #EF4444', borderRight: '2px solid #EF4444' }} />
+
+          <div style={{ textAlign: 'center', marginBottom: '14px' }}>
+            <span style={{ fontSize: '11px', color: '#9CA3AF', border: '1px solid #7F1D1D', padding: '2px 8px', borderRadius: '4px', backgroundColor: '#1A0808' }}>
+              🎯 DATE: {realTodayYear}.{String(realTodayMonth).padStart(2, '0')}.{String(realTodayDay).padStart(2, '0')}
+            </span>
+            <p style={{ fontSize: '12px', color: '#D1D5DB', margin: '12px 0 14px 0', lineHeight: '1.5' }}>
+              感染進行を抑制するため、本日の投薬プロトコルを実行してください。
+            </p>
+
+            {isTodayDone ? (
+              <div style={{ width: '100%', padding: '16px', borderRadius: '8px', backgroundColor: '#064E3B', border: '1px solid #059669', color: '#34D399', fontWeight: 900, fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxSizing: 'border-box' }}>
+                <CheckCircle2 style={{ width: '22px', height: '22px' }} />
+                <span>ADMINISTER DOSE ( 投与完了 )</span>
+              </div>
+            ) : (
+              <button
+                onClick={handleTodayInject}
+                disabled={isInjecting}
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  borderRadius: '8px',
+                  background: 'repeating-linear-gradient(45deg, #DC2626, #DC2626 10px, #B91C1C 10px, #B91C1C 20px)',
+                  color: '#FFF',
+                  fontWeight: 900,
+                  fontSize: '16px',
+                  border: '1px solid #EF4444',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 15px rgba(220,38,38,0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  letterSpacing: '0.05em'
+                }}
+              >
+                <span>💉</span>
+                <span>ADMINISTER DOSE ( 本日の投与を記録 )</span>
+              </button>
+            )}
           </div>
 
-          {isTodayDone ? (
-            <div style={{ width: '100%', padding: '14px', borderRadius: '12px', backgroundColor: '#14281A', border: '1px solid #1E4620', color: '#4ADE80', fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxSizing: 'border-box', margin: '12px 0' }}>
-              <CheckCircle2 style={{ width: '20px', height: '20px' }} />
-              <span>DOSAGE CONFIRMED</span>
-            </div>
-          ) : (
-            <button
-              onClick={handleTodayInject}
-              disabled={isInjecting}
-              style={{
-                width: '100%',
-                padding: '14px',
-                borderRadius: '12px',
-                backgroundColor: '#DC2626',
-                color: '#FFF',
-                fontWeight: 900,
-                fontSize: '15px',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(220,38,38,0.35)',
-                margin: '12px 0'
-              }}
-            >
-              本日のワクチン・抗ウイルス剤 投与完了
-            </button>
-          )}
-
-          <p style={{ fontSize: '11px', color: '#9CA3AF', margin: '4px 0 16px 0' }}>バイタル数値は正常範囲内を維持しています。</p>
-
-          <div style={{ paddingTop: '16px', borderTop: '1px solid #2A1212' }}>
-            <p style={{ fontSize: '10px', color: '#9CA3AF', textAlign: 'left', marginBottom: '8px', fontWeight: 700 }}>REAGENT TYPE:</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px' }}>
+          <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid #7F1D1D' }}>
+            <p style={{ fontSize: '10px', color: '#9CA3AF', marginBottom: '8px', fontWeight: 700, letterSpacing: '0.05em' }}>REAGENT TYPE:</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '6px' }}>
               {REAGENT_TYPES.map((reagent) => {
                 const isSelected = selectedReagent === reagent.id;
                 return (
@@ -348,21 +396,22 @@ export default function App() {
                     type="button"
                     onClick={() => handleSelectReagent(reagent.id)}
                     style={{
-                      padding: '10px 8px',
-                      borderRadius: '8px',
-                      fontSize: '12px',
+                      padding: '8px 4px',
+                      borderRadius: '6px',
+                      fontSize: '11px',
                       fontWeight: 700,
                       cursor: 'pointer',
-                      border: isSelected ? '1px solid #EF4444' : '1px solid #2A1212',
-                      backgroundColor: isSelected ? '#2A1212' : '#0A0A0A',
+                      border: isSelected ? '1px solid #EF4444' : '1px solid #7F1D1D',
+                      backgroundColor: isSelected ? '#2A0B0B' : '#0A0202',
                       color: isSelected ? '#EF4444' : '#9CA3AF',
                       display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '8px'
+                      gap: '4px'
                     }}
                   >
-                    <span style={{ fontSize: '16px' }}>{reagent.emoji}</span>
-                    <span>{reagent.name}</span>
+                    <span style={{ fontSize: '18px' }}>{reagent.emoji}</span>
+                    <span style={{ fontSize: '9px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>{reagent.name}</span>
                   </button>
                 );
               })}
@@ -370,32 +419,27 @@ export default function App() {
           </div>
         </section>
 
-        {/* 投薬記録表 */}
-        <section
+        {/* CLINICAL TRIAL MATRIX（投薬記録表） */}
+        <section 
           ref={matrixRef}
           style={{
-            backgroundColor: '#140A0A',
-            borderRadius: '16px',
-            padding: '20px',
-            border: isMatrixHighlighted ? '2px solid #EF4444' : '1px solid #2A1212',
+            backgroundColor: '#0F0505',
+            borderRadius: '12px',
+            padding: '16px',
+            border: isMatrixHighlighted ? '2px solid #EF4444' : '1px solid #7F1D1D',
             transition: 'all 0.5s'
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px dashed #2A1212', paddingBottom: '12px' }}>
-            <div>
-              <p style={{ fontSize: '10px', color: '#9CA3AF', margin: 0, fontWeight: 700 }}>CLINICAL TRIAL MATRIX</p>
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#F3F4F6', margin: '2px 0 0 0' }}>
-                {viewYear}年 {viewMonth + 1}月 投薬記録表
-              </h3>
-            </div>
-            <div style={{ display: 'flex', gap: '4px' }}>
-              <button onClick={() => setViewMonth((m) => (m === 0 ? 11 : m - 1))} style={{ background: '#0A0A0A', border: '1px solid #2A1212', borderRadius: '4px', color: '#9CA3AF', cursor: 'pointer', padding: '6px' }}>
-                <ChevronLeft style={{ width: '16px', height: '16px' }} />
-              </button>
-              <button onClick={() => setViewMonth((m) => (m === 11 ? 0 : m + 1))} style={{ background: '#0A0A0A', border: '1px solid #2A1212', borderRadius: '4px', color: '#9CA3AF', cursor: 'pointer', padding: '6px' }}>
-                <ChevronRight style={{ width: '16px', height: '16px' }} />
-              </button>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', borderBottom: '1px dashed #7F1D1D', paddingBottom: '10px' }}>
+            <button onClick={() => setViewMonth((m) => (m === 0 ? 11 : m - 1))} style={{ background: '#1A0808', border: '1px solid #7F1D1D', borderRadius: '4px', color: '#9CA3AF', cursor: 'pointer', padding: '6px' }}>
+              <ChevronLeft style={{ width: '18px', height: '18px' }} />
+            </button>
+            <h3 style={{ fontSize: '14px', fontWeight: 900, color: '#F3F4F6', margin: 0, letterSpacing: '0.05em' }}>
+              {viewYear}年 {viewMonth + 1}月 投薬記録表
+            </h3>
+            <button onClick={() => setViewMonth((m) => (m === 11 ? 0 : m + 1))} style={{ background: '#1A0808', border: '1px solid #7F1D1D', borderRadius: '4px', color: '#9CA3AF', cursor: 'pointer', padding: '6px' }}>
+              <ChevronRight style={{ width: '18px', height: '18px' }} />
+            </button>
           </div>
 
           <div style={{ marginBottom: '12px' }}>
@@ -405,19 +449,19 @@ export default function App() {
               onChange={handleNameChange}
               placeholder="SUBJECT ID / NAME: 被験者名を入力..."
               maxLength={32}
-              style={{ width: '100%', backgroundColor: '#0A0A0A', border: '1px solid #2A1212', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', color: '#F3F4F6', outline: 'none', fontFamily: 'monospace', boxSizing: 'border-box' }}
+              style={{ width: '100%', backgroundColor: '#0A0202', border: '1px solid #7F1D1D', borderRadius: '4px', padding: '8px 12px', fontSize: '11px', color: '#F3F4F6', outline: 'none', fontFamily: 'monospace', boxSizing: 'border-box' }}
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '6px', marginBottom: '8px', textAlign: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '4px', marginBottom: '6px', textAlign: 'center' }}>
             {WEEKDAYS.map((w, idx) => (
-              <div key={w} style={{ fontSize: '11px', color: idx === 0 ? '#EF4444' : idx === 6 ? '#38BDF8' : '#9CA3AF', fontWeight: 700 }}>
+              <div key={w} style={{ fontSize: '10px', color: idx === 0 ? '#EF4444' : idx === 6 ? '#38BDF8' : '#9CA3AF', fontWeight: 700 }}>
                 {w}
               </div>
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '6px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '4px' }}>
             {calendarCells.map((cellDate, idx) => {
               if (!cellDate) return <div key={`empty-${idx}`} style={{ aspectRatio: '1' }} />;
 
@@ -428,6 +472,7 @@ export default function App() {
               const loggedReagent = logs[key];
               const isTodayCell = y === realTodayYear && m === realTodayMonth && d === realTodayDay;
               const isFuture = cellDate > realToday;
+              const dayOfWeek = cellDate.getDay();
 
               return (
                 <button
@@ -437,11 +482,11 @@ export default function App() {
                   disabled={isFuture}
                   style={{
                     aspectRatio: '1',
-                    borderRadius: '8px',
-                    border: isTodayCell ? '1px solid #EF4444' : '1px solid #2A1212',
-                    backgroundColor: loggedReagent ? '#2A1212' : '#0A0A0A',
+                    borderRadius: '6px',
+                    border: isTodayCell ? '1px solid #EF4444' : '1px solid #3A1010',
+                    backgroundColor: loggedReagent ? '#2A0B0B' : '#0A0202',
                     color: loggedReagent ? '#EF4444' : '#6B7280',
-                    fontSize: '11px',
+                    fontSize: '10px',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -450,17 +495,22 @@ export default function App() {
                     opacity: isFuture ? 0.3 : 1
                   }}
                 >
-                  <span style={{ fontSize: '10px', fontWeight: 700 }}>{String(d).padStart(2, '0')}</span>
-                  <span style={{ fontSize: '12px', marginTop: '2px' }}>{loggedReagent ? getReagentEmoji(loggedReagent) : '未'}</span>
+                  <span style={{ fontSize: '9px', fontWeight: 700, color: isTodayCell ? '#EF4444' : dayOfWeek === 0 ? '#EF4444' : dayOfWeek === 6 ? '#38BDF8' : '#9CA3AF' }}>
+                    {d}
+                  </span>
+                  <span style={{ fontSize: '12px', marginTop: '1px' }}>{loggedReagent ? getReagentEmoji(loggedReagent) : ''}</span>
                 </button>
               );
             })}
           </div>
         </section>
 
-        <div style={{ textAlign: 'center', paddingTop: '8px' }}>
-          <p style={{ fontSize: '10px', color: '#6B7280', margin: 0, letterSpacing: '0.05em' }}>
-            CONFIDENTIAL // UMBRELLA BIO-LAB SYSTEM v3.4.2
+        {/* ボトムハザードバー */}
+        <div className="hazard-border" style={{ width: '100%', height: '8px', marginTop: '8px' }} />
+
+        <div style={{ textAlign: 'center', paddingBottom: '4px' }}>
+          <p style={{ fontSize: '9px', color: '#6B7280', margin: 0, letterSpacing: '0.05em' }}>
+            CONFIDENTIAL // UMBRELLA BIO-LAB SYSTEM v3.5
           </p>
         </div>
       </main>
