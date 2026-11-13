@@ -24,10 +24,10 @@ const REAGENT_TYPES = [
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
 const STORAGE_KEYS = {
-  LOGS: 'vital_protocol_logs_v2',
-  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v2',
-  SUBJECT_NAME: 'vital_protocol_subject_name_v2',
-  SOUND_ENABLED: 'vital_protocol_sound_enabled_v2',
+  LOGS: 'vital_protocol_logs_v1',
+  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v1',
+  SUBJECT_NAME: 'vital_protocol_subject_name_v1',
+  SOUND_ENABLED: 'vital_protocol_sound_enabled_v1',
 };
 
 export default function App() {
@@ -251,216 +251,175 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#0A0A0A', color: '#F3F4F6', fontFamily: 'monospace', paddingBottom: '3rem' }}>
-      <style>{`
-        @keyframes stampSlam {
-          0% { transform: scale(2.2) rotate(-20deg); opacity: 0; }
-          65% { transform: scale(0.92) rotate(4deg); opacity: 1; }
-          100% { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-        .animate-stamp-slam {
-          animation: stampSlam 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }
-      `}</style>
-
-      {/* ヘッダー */}
+    <div style={{ minHeight: '100vh', backgroundColor: '#0A0A0A', color: '#EF4444', fontFamily: 'monospace', paddingBottom: '3rem' }}>
       <header style={{ width: '100%', backgroundColor: '#140A0A', borderBottom: '1px solid #2A1212', position: 'sticky', top: 0, zIndex: 30 }}>
         <div style={{ maxWidth: '32rem', margin: '0 auto', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '24px', lineHeight: 1 }}>☣️</span>
-            <h1 style={{ fontSize: '15px', fontWeight: 950, color: '#EF4444', letterSpacing: '0.08em', margin: 0 }}>
-              VITAL PROTOCOL // DOSAGE LOG
-            </h1>
+            <span style={{ fontSize: '22px' }}>☣️</span>
+            <div>
+              <p style={{ fontSize: '10px', color: '#9CA3AF', margin: 0, letterSpacing: '0.05em' }}>MEDICAL RESEARCH // LAB-OS</p>
+              <h1 style={{ fontSize: '14px', fontWeight: 900, color: '#EF4444', letterSpacing: '0.1em', margin: 0 }}>
+                VITAL PROTOCOL // DOSAGE LOG
+              </h1>
+            </div>
           </div>
-          <button
-            onClick={toggleSound}
-            style={{ padding: '8px', borderRadius: '9999px', background: '#2A1212', border: '1px solid #3A1A1A', cursor: 'pointer', color: '#9CA3AF' }}
-          >
+          <button onClick={toggleSound} style={{ background: 'transparent', border: '1px solid #2A1212', borderRadius: '6px', padding: '6px', color: '#9CA3AF', cursor: 'pointer' }}>
             {soundEnabled ? <Volume2 style={{ width: '18px', height: '18px' }} /> : <VolumeX style={{ width: '18px', height: '18px' }} />}
           </button>
         </div>
       </header>
 
       {toastMessage && (
-        <div style={{ position: 'fixed', top: '64px', left: '50%', transform: 'translateX(-50%)', zIndex: 50, backgroundColor: '#DC2626', color: '#FFF', fontSize: '13px', fontWeight: 700, padding: '10px 18px', borderRadius: '9999px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+        <div style={{ position: 'fixed', top: '64px', left: '50%', transform: 'translateX(-50%)', zIndex: 50, backgroundColor: '#B91C1C', color: '#FFF', fontSize: '12px', fontWeight: 700, padding: '8px 16px', borderRadius: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
           {toastMessage}
         </div>
       )}
 
-      <main style={{ maxWidth: '32rem', margin: '0 auto', padding: '20px 16px 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        
-        {/* 実績カード（ラジオ体操風の2カラムレイアウト） */}
-        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '14px' }}>
-          <div style={{ backgroundColor: '#140A0A', borderRadius: '16px', padding: '16px', border: '1px solid #2A1212', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '9999px', backgroundColor: '#2A1212', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid #3A1A1A' }}>
-              <Flame style={{ width: '22px', height: '22px', color: '#EF4444' }} />
-            </div>
-            <div>
-              <p style={{ fontSize: '11px', fontWeight: 700, color: '#9CA3AF', margin: 0, letterSpacing: '0.05em' }}>連続投与日数</p>
-              <p style={{ fontSize: '22px', fontWeight: 900, color: '#EF4444', margin: '2px 0 0 0' }}>
-                {streakCount} <span style={{ fontSize: '13px', fontWeight: 700, color: '#9CA3AF' }}>日</span>
-              </p>
-            </div>
+      <main style={{ maxWidth: '32rem', margin: '0 auto', padding: '20px 16px 0', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* テレメトリーステータス */}
+        <div style={{ backgroundColor: '#140A0A', borderRadius: '12px', padding: '12px 16px', border: '1px solid #2A1212', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '12px' }}>⚠️</span>
+            <span style={{ fontSize: '11px', color: '#9CA3AF', fontWeight: 700 }}>VITAL TELEMETRY:</span>
+            <span style={{ fontSize: '11px', color: '#EF4444', fontWeight: 900 }}>STABLE / {isTodayDone ? 'DOSAGE CONFIRMED' : 'PENDING'}</span>
           </div>
+        </div>
 
-          <div style={{ backgroundColor: '#140A0A', borderRadius: '16px', padding: '16px', border: '1px solid #2A1212', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '9999px', backgroundColor: '#2A1212', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid #3A1A1A' }}>
-              <Trophy style={{ width: '22px', height: '22px', color: '#EF4444' }} />
-            </div>
-            <div>
-              <p style={{ fontSize: '11px', fontWeight: 700, color: '#9CA3AF', margin: 0, letterSpacing: '0.05em' }}>通算投薬数</p>
-              <p style={{ fontSize: '22px', fontWeight: 900, color: '#EF4444', margin: '2px 0 0 0' }}>
-                {totalDoses} <span style={{ fontSize: '13px', fontWeight: 700, color: '#9CA3AF' }}>個</span>
-              </p>
-            </div>
+        {/* スタッツ */}
+        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px' }}>
+          <div style={{ backgroundColor: '#140A0A', borderRadius: '12px', padding: '16px', border: '1px solid #2A1212' }}>
+            <p style={{ fontSize: '10px', color: '#9CA3AF', margin: 0, fontWeight: 700, letterSpacing: '0.05em' }}>SURVIVAL STREAK 連続投与日数</p>
+            <p style={{ fontSize: '24px', fontWeight: 900, color: '#EF4444', margin: '4px 0 0 0' }}>
+              {streakCount} <span style={{ fontSize: '12px', color: '#9CA3AF' }}>DAYS</span>
+            </p>
+          </div>
+          <div style={{ backgroundColor: '#140A0A', borderRadius: '12px', padding: '16px', border: '1px solid #2A1212' }}>
+            <p style={{ fontSize: '10px', color: '#9CA3AF', margin: 0, fontWeight: 700, letterSpacing: '0.05em' }}>TOTAL DOSES 通算投薬数</p>
+            <p style={{ fontSize: '24px', fontWeight: 900, color: '#EF4444', margin: '4px 0 0 0' }}>
+              {totalDoses} <span style={{ fontSize: '12px', color: '#9CA3AF' }}>UNITS</span>
+            </p>
           </div>
         </section>
 
         {/* チェックインカード */}
-        <section style={{ backgroundColor: '#140A0A', borderRadius: '24px', padding: '20px', border: '2px solid #EF4444', boxShadow: '0 6px 20px rgba(239,68,68,0.15)', textAlign: 'center' }}>
-          <p style={{ fontSize: '13px', fontWeight: 700, color: '#9CA3AF', margin: 0 }}>
-            本日: {realTodayYear}年{realTodayMonth}月{realTodayDay}日
-          </p>
-
-          <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#F3F4F6', margin: '8px 0 16px 0' }}>
-            本日のワクチン・抗ウイルス剤 投与完了
-          </h2>
-
-          <div>
-            {isTodayDone ? (
-              <div style={{ width: '100%', padding: '16px', borderRadius: '9999px', backgroundColor: '#14281A', border: '2px solid #1E4620', color: '#4ADE80', fontWeight: 800, fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxSizing: 'border-box' }}>
-                <CheckCircle2 style={{ width: '22px', height: '22px' }} />
-                <span>本日の投与は記録済みです！</span>
-              </div>
-            ) : (
-              <button
-                onClick={handleTodayInject}
-                disabled={isInjecting}
-                style={{
-                  width: '100%',
-                  padding: '16px',
-                  borderRadius: '9999px',
-                  background: 'linear-gradient(to bottom, #EF4444, #DC2626)',
-                  color: '#FFF',
-                  fontWeight: 900,
-                  fontSize: '17px',
-                  boxShadow: '0 6px 0 #991B1B, 0 10px 20px rgba(239,68,68,0.35)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '10px'
-                }}
-              >
-                <span style={{ fontSize: '22px' }}>💉</span>
-                <span>投与を記録する</span>
-              </button>
-            )}
+        <section style={{ backgroundColor: '#140A0A', borderRadius: '16px', padding: '20px', border: '1px solid #2A1212', textAlign: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <span style={{ fontSize: '11px', color: '#9CA3AF' }}>DATE: {realTodayYear} . {realTodayMonth} . {realTodayDay}</span>
+            <span style={{ fontSize: '10px', color: '#EF4444', border: '1px solid #2A1212', padding: '2px 6px', borderRadius: '4px' }}>SECURE TERMINAL</span>
           </div>
 
-          {/* 試薬デザイン選択（ボタンをカード風の丸形横並びに） */}
-          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #2A1212', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-            {REAGENT_TYPES.map((reagent) => {
-              const isSelected = selectedReagent === reagent.id;
-              return (
-                <button
-                  key={reagent.id}
-                  type="button"
-                  onClick={() => handleSelectReagent(reagent.id)}
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '9999px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    border: isSelected ? '2px solid #EF4444' : '1px solid #2A1212',
-                    backgroundColor: isSelected ? '#2A1212' : '#0F0707',
-                    boxShadow: isSelected ? '0 4px 12px rgba(239,68,68,0.4)' : 'none',
-                    transform: isSelected ? 'scale(1.1)' : 'scale(1)'
-                  }}
-                  title={reagent.name}
-                >
-                  <span style={{ fontSize: '22px' }}>{reagent.emoji}</span>
-                </button>
-              );
-            })}
+          {isTodayDone ? (
+            <div style={{ width: '100%', padding: '14px', borderRadius: '12px', backgroundColor: '#14281A', border: '1px solid #1E4620', color: '#4ADE80', fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxSizing: 'border-box', margin: '12px 0' }}>
+              <CheckCircle2 style={{ width: '20px', height: '20px' }} />
+              <span>DOSAGE CONFIRMED</span>
+            </div>
+          ) : (
+            <button
+              onClick={handleTodayInject}
+              disabled={isInjecting}
+              style={{
+                width: '100%',
+                padding: '14px',
+                borderRadius: '12px',
+                backgroundColor: '#DC2626',
+                color: '#FFF',
+                fontWeight: 900,
+                fontSize: '15px',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(220,38,38,0.35)',
+                margin: '12px 0'
+              }}
+            >
+              本日のワクチン・抗ウイルス剤 投与完了
+            </button>
+          )}
+
+          <p style={{ fontSize: '11px', color: '#9CA3AF', margin: '4px 0 16px 0' }}>バイタル数値は正常範囲内を維持しています。</p>
+
+          <div style={{ paddingTop: '16px', borderTop: '1px solid #2A1212' }}>
+            <p style={{ fontSize: '10px', color: '#9CA3AF', textAlign: 'left', marginBottom: '8px', fontWeight: 700 }}>REAGENT TYPE:</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px' }}>
+              {REAGENT_TYPES.map((reagent) => {
+                const isSelected = selectedReagent === reagent.id;
+                return (
+                  <button
+                    key={reagent.id}
+                    type="button"
+                    onClick={() => handleSelectReagent(reagent.id)}
+                    style={{
+                      padding: '10px 8px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      border: isSelected ? '1px solid #EF4444' : '1px solid #2A1212',
+                      backgroundColor: isSelected ? '#2A1212' : '#0A0A0A',
+                      color: isSelected ? '#EF4444' : '#9CA3AF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    <span style={{ fontSize: '16px' }}>{reagent.emoji}</span>
+                    <span>{reagent.name}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </section>
 
-        {/* 投薬記録表（カレンダーカードエリア） */}
-        <section 
+        {/* 投薬記録表 */}
+        <section
           ref={matrixRef}
           style={{
             backgroundColor: '#140A0A',
-            borderRadius: '24px',
+            borderRadius: '16px',
             padding: '20px',
-            border: isMatrixHighlighted ? '2px solid #EF4444' : '2px solid #2A1212',
-            boxShadow: isMatrixHighlighted ? '0 0 30px rgba(239,68,68,0.35)' : '0 4px 12px rgba(0,0,0,0.4)',
-            transition: 'all 0.7s'
+            border: isMatrixHighlighted ? '2px solid #EF4444' : '1px solid #2A1212',
+            transition: 'all 0.5s'
           }}
         >
-          <div style={{ textAlign: 'center', paddingBottom: '12px', borderBottom: '2px dashed #2A1212' }}>
-            <p style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.15em', color: '#9CA3AF', margin: 0, textTransform: 'uppercase' }}>
-              CLINICAL TRIAL MATRIX
-            </p>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px' }}>
-              <button onClick={() => setViewMonth((m) => (m === 0 ? 11 : m - 1))} style={{ padding: '8px', borderRadius: '9999px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#9CA3AF' }}>
-                <ChevronLeft style={{ width: '22px', height: '22px' }} />
-              </button>
-
-              <h2 style={{ fontSize: '18px', fontWeight: 900, color: '#F3F4F6', margin: 0 }}>
-                {viewYear}年{viewMonth + 1}月 投薬記録表
-              </h2>
-
-              <button onClick={() => setViewMonth((m) => (m === 11 ? 0 : m + 1))} style={{ padding: '8px', borderRadius: '9999px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#9CA3AF' }}>
-                <ChevronRight style={{ width: '22px', height: '22px' }} />
-              </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px dashed #2A1212', paddingBottom: '12px' }}>
+            <div>
+              <p style={{ fontSize: '10px', color: '#9CA3AF', margin: 0, fontWeight: 700 }}>CLINICAL TRIAL MATRIX</p>
+              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#F3F4F6', margin: '2px 0 0 0' }}>
+                {viewYear}年 {viewMonth + 1}月 投薬記録表
+              </h3>
             </div>
-
-            <div style={{ marginTop: '12px', backgroundColor: '#0F0707', border: '1px solid #2A1212', borderRadius: '12px', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: '8px', maxWidth: '320px', margin: '12px auto 0' }}>
-              <label htmlFor="subject-name-input" style={{ fontSize: '12px', fontWeight: 800, color: '#9CA3AF', whiteSpace: 'nowrap' }}>
-                被験者：
-              </label>
-              <input
-                id="subject-name-input"
-                type="text"
-                value={subjectName}
-                onChange={handleNameChange}
-                placeholder="被験者名を入力..."
-                maxLength={24}
-                style={{ width: '100%', backgroundColor: 'transparent', fontSize: '13px', fontWeight: 700, color: '#F3F4F6', border: 'none', outline: 'none', fontFamily: 'monospace' }}
-              />
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <button onClick={() => setViewMonth((m) => (m === 0 ? 11 : m - 1))} style={{ background: '#0A0A0A', border: '1px solid #2A1212', borderRadius: '4px', color: '#9CA3AF', cursor: 'pointer', padding: '6px' }}>
+                <ChevronLeft style={{ width: '16px', height: '16px' }} />
+              </button>
+              <button onClick={() => setViewMonth((m) => (m === 11 ? 0 : m + 1))} style={{ background: '#0A0A0A', border: '1px solid #2A1212', borderRadius: '4px', color: '#9CA3AF', cursor: 'pointer', padding: '6px' }}>
+                <ChevronRight style={{ width: '16px', height: '16px' }} />
+              </button>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '6px', marginTop: '16px', marginBottom: '6px', textAlign: 'center' }}>
-            {WEEKDAYS.map((dayName, idx) => (
-              <div
-                key={dayName}
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 800,
-                  padding: '4px 0',
-                  borderRadius: '6px',
-                  color: idx === 0 ? '#EF4444' : idx === 6 ? '#38BDF8' : '#9CA3AF',
-                  backgroundColor: idx === 0 ? '#2A1212' : idx === 6 ? '#0F1E2E' : '#1A1212'
-                }}
-              >
-                {dayName}
+          <div style={{ marginBottom: '12px' }}>
+            <input
+              type="text"
+              value={subjectName}
+              onChange={handleNameChange}
+              placeholder="SUBJECT ID / NAME: 被験者名を入力..."
+              maxLength={32}
+              style={{ width: '100%', backgroundColor: '#0A0A0A', border: '1px solid #2A1212', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', color: '#F3F4F6', outline: 'none', fontFamily: 'monospace', boxSizing: 'border-box' }}
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '6px', marginBottom: '8px', textAlign: 'center' }}>
+            {WEEKDAYS.map((w, idx) => (
+              <div key={w} style={{ fontSize: '11px', color: idx === 0 ? '#EF4444' : idx === 6 ? '#38BDF8' : '#9CA3AF', fontWeight: 700 }}>
+                {w}
               </div>
             ))}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '6px' }}>
-            {calendarCells.map((cellDate, index) => {
-              if (!cellDate) {
-                return <div key={`empty-${index}`} style={{ aspectRatio: '1', borderRadius: '12px', backgroundColor: 'rgba(20,10,10,0.4)' }} />;
-              }
+            {calendarCells.map((cellDate, idx) => {
+              if (!cellDate) return <div key={`empty-${idx}`} style={{ aspectRatio: '1' }} />;
 
               const y = cellDate.getFullYear();
               const m = cellDate.getMonth() + 1;
@@ -469,7 +428,6 @@ export default function App() {
               const loggedReagent = logs[key];
               const isTodayCell = y === realTodayYear && m === realTodayMonth && d === realTodayDay;
               const isFuture = cellDate > realToday;
-              const dayOfWeek = cellDate.getDay();
 
               return (
                 <button
@@ -479,51 +437,30 @@ export default function App() {
                   disabled={isFuture}
                   style={{
                     aspectRatio: '1',
-                    borderRadius: '12px',
-                    border: isTodayCell ? '2px solid #EF4444' : isFuture ? '1px solid rgba(42,18,18,0.5)' : '1px solid #2A1212',
-                    backgroundColor: isTodayCell ? '#1F0C0C' : isFuture ? '#0A0A0A' : '#0F0707',
-                    cursor: isFuture ? 'not-allowed' : 'pointer',
+                    borderRadius: '8px',
+                    border: isTodayCell ? '1px solid #EF4444' : '1px solid #2A1212',
+                    backgroundColor: loggedReagent ? '#2A1212' : '#0A0A0A',
+                    color: loggedReagent ? '#EF4444' : '#6B7280',
+                    fontSize: '11px',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '4px',
-                    position: 'relative'
+                    justifyContent: 'center',
+                    cursor: isFuture ? 'not-allowed' : 'pointer',
+                    opacity: isFuture ? 0.3 : 1
                   }}
                 >
-                  <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 800, color: isTodayCell ? '#EF4444' : dayOfWeek === 0 ? '#EF4444' : dayOfWeek === 6 ? '#38BDF8' : '#9CA3AF' }}>
-                      {d}
-                    </span>
-                    {isTodayCell && (
-                      <span style={{ fontSize: '7px', fontWeight: 900, color: '#FFF', backgroundColor: '#EF4444', padding: '0 2px', borderRadius: '2px' }}>今日</span>
-                    )}
-                  </div>
-
-                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                    {loggedReagent ? (
-                      <div className="animate-stamp-slam" style={{ width: '30px', height: '30px', borderRadius: '9999px', border: '2px solid #EF4444', backgroundColor: '#2A1212', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontSize: '15px', lineHeight: 1 }}>{getReagentEmoji(loggedReagent)}</span>
-                      </div>
-                    ) : isFuture ? (
-                      <Lock style={{ width: '12px', height: '12px', color: '#4B5563' }} />
-                    ) : (
-                      <div style={{ width: '26px', height: '26px', borderRadius: '9999px', border: '1px dashed #2A1212' }} />
-                    )}
-                  </div>
+                  <span style={{ fontSize: '10px', fontWeight: 700 }}>{String(d).padStart(2, '0')}</span>
+                  <span style={{ fontSize: '12px', marginTop: '2px' }}>{loggedReagent ? getReagentEmoji(loggedReagent) : '未'}</span>
                 </button>
               );
             })}
           </div>
-
-          <p style={{ marginTop: '16px', fontSize: '11px', color: '#9CA3AF', textAlign: 'center', lineHeight: '1.5' }}>
-            ※ タップすると任意の過去日の投薬ログの記録・取り消しができます（未来日はロック）。
-          </p>
         </section>
 
-        <div style={{ textAlign: 'center', paddingTop: '4px' }}>
+        <div style={{ textAlign: 'center', paddingTop: '8px' }}>
           <p style={{ fontSize: '10px', color: '#6B7280', margin: 0, letterSpacing: '0.05em' }}>
-            CONFIDENTIAL // UMBRELLA BIO-LAB SYSTEM v3.5
+            CONFIDENTIAL // UMBRELLA BIO-LAB SYSTEM v3.4.2
           </p>
         </div>
       </main>
