@@ -154,14 +154,31 @@ export default function App() {
   const isTodayDone = !!logs[todayKey];
 
   const calculateStreak = () => {
-    let streak = 0;
-    const totalKeys = Object.keys(logs).sort();
-    if (totalKeys.length > 0) {
-      streak = totalKeys.length;
-    }
-    return streak;
-  };
+  let streak = 0;
+  let cursor = new Date(realTodayYear, realTodayMonth - 1, realTodayDay);
 
+  const todayKey = `${cursor.getFullYear()}-${cursor.getMonth() + 1}-${cursor.getDate()}`;
+  
+  // 本日未投与の場合は昨日からさかのぼる
+  if (!logs[todayKey]) {
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  while (true) {
+    const y = cursor.getFullYear();
+    const m = cursor.getMonth() + 1;
+    const d = cursor.getDate();
+    const key = `${y}-${m}-${d}`;
+
+    if (logs[key]) {
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+};
   const totalDoses = Object.keys(logs).length;
   const streakCount = calculateStreak();
 
