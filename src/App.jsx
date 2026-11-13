@@ -23,10 +23,10 @@ const REAGENT_TYPES = [
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
 const STORAGE_KEYS = {
-  LOGS: 'vital_protocol_logs_v3',
-  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v3',
-  SUBJECT_NAME: 'vital_protocol_subject_name_v3',
-  SOUND_ENABLED: 'vital_protocol_sound_enabled_v3',
+  LOGS: 'vital_protocol_logs_v4',
+  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v4',
+  SUBJECT_NAME: 'vital_protocol_subject_name_v4',
+  SOUND_ENABLED: 'vital_protocol_sound_enabled_v4',
 };
 
 export default function App() {
@@ -140,7 +140,7 @@ export default function App() {
     }
   };
 
-  // 連続日数の正しい計算ロジック（途切れたらそこでストップ）
+  // 連続日数の正しい計算ロジック
   const calculateStreak = () => {
     let streak = 0;
     let cursor = new Date(realTodayYear, realTodayMonth - 1, realTodayDay);
@@ -252,10 +252,13 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0A0A0A', color: '#F3F4F6', fontFamily: 'monospace', paddingBottom: '3rem' }}>
       <style>{`
-        @keyframes pulseGlow {
-          0% { box-shadow: 0 0 5px rgba(239,68,68,0.2); }
-          50% { box-shadow: 0 0 20px rgba(239,68,68,0.6); }
-          100% { box-shadow: 0 0 5px rgba(239,68,68,0.2); }
+        @keyframes emergencyBlink {
+          0% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.8)); }
+          50% { opacity: 0.3; transform: scale(0.95); filter: drop-shadow(0 0 0px rgba(239, 68, 68, 0)); }
+          100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.8)); }
+        }
+        .animate-blink {
+          animation: emergencyBlink 1.2s infinite ease-in-out;
         }
         .hazard-border {
           border: 1px solid #7F1D1D;
@@ -275,11 +278,15 @@ export default function App() {
       {/* ヘッダー */}
       <header style={{ width: '100%', backgroundColor: '#0F0505', borderBottom: '1px solid #7F1D1D', position: 'sticky', top: 0, zIndex: 30 }}>
         <div style={{ maxWidth: '32rem', margin: '0 auto', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
-            <p style={{ fontSize: '9px', color: '#9CA3AF', margin: 0, letterSpacing: '0.1em' }}>MEDICAL RESEARCH // LAB-OS</p>
-            <h1 style={{ fontSize: '13px', fontWeight: 900, color: '#EF4444', letterSpacing: '0.12em', margin: 0 }}>
-              VITAL PROTOCOL // DOSAGE LOG
-            </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* 1. 絵文字（バイオハザード）の点滅 */}
+            <span className="animate-blink" style={{ fontSize: '24px', lineHeight: 1 }}>☣️</span>
+            <div>
+              <p style={{ fontSize: '9px', color: '#9CA3AF', margin: 0, letterSpacing: '0.1em' }}>MEDICAL RESEARCH // LAB-OS</p>
+              <h1 style={{ fontSize: '13px', fontWeight: 900, color: '#EF4444', letterSpacing: '0.12em', margin: 0 }}>
+                VITAL PROTOCOL // DOSAGE LOG
+              </h1>
+            </div>
           </div>
           <button
             onClick={toggleSound}
@@ -309,7 +316,8 @@ export default function App() {
               </p>
             </div>
           </div>
-          <Activity style={{ width: '20px', height: '20px', color: '#EF4444' }} />
+          {/* 2. バイタル（心電図）アイコンの点滅 */}
+          <Activity className="animate-blink" style={{ width: '22px', height: '22px', color: '#EF4444' }} />
         </div>
 
         {/* スタッツ（SURVIVAL STREAK & TOTAL DOSES） */}
