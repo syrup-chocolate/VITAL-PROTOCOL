@@ -29,6 +29,9 @@ export default function App() {
   const [currentYear, setCurrentYear] = useState(2026);
   const [currentMonth, setCurrentMonth] = useState(11);
 
+  // カレンダーが浮き上がるアニメーション用のトリガー状態
+  const [isMatrixHighlighted, setIsMatrixHighlighted] = useState(false);
+
   useEffect(() => {
     try {
       localStorage.setItem('vital_protocol_logs', JSON.stringify(logs));
@@ -73,7 +76,6 @@ export default function App() {
   const realTodayMonth = 11;
   const realTodayDay = 12;
 
-  // 選択中年月の日数と、1日目の曜日（0=日, 1=月...）を計算
   const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
   const firstDayOfWeek = new Date(currentYear, currentMonth - 1, 1).getDay();
 
@@ -101,9 +103,11 @@ export default function App() {
     }
   };
 
-  const handleDayClick = (day) => {
+  // 投薬実行時のアクション
+  const handleAdministerDose = (day) => {
     playSound('click');
     const dateKey = `${currentYear}-${currentMonth}-${day}`;
+    
     setLogs(prev => {
       const newLogs = { ...prev };
       if (newLogs[dateKey] === selectedReagent) {
@@ -113,6 +117,12 @@ export default function App() {
       }
       return newLogs;
     });
+
+    // カレンダーを浮き上がらせて光らせる演出を発動
+    setIsMatrixHighlighted(true);
+    setTimeout(() => {
+      setIsMatrixHighlighted(false);
+    }, 800);
   };
 
   const todayKey = `${realTodayYear}-${realTodayMonth}-${realTodayDay}`;
@@ -217,7 +227,7 @@ export default function App() {
               <div>
                 <p className="text-xs text-red-300 mb-3">感染進行を抑制するため、本日のプロトコルを実行してください。</p>
                 <button
-                  onClick={() => handleDayClick(realTodayDay)}
+                  onClick={() => handleAdministerDose(realTodayDay)}
                   className="w-full py-3.5 px-4 rounded-lg bg-gradient-to-r from-red-700 via-red-600 to-red-800 text-white font-bold text-sm tracking-widest border border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)] flex items-center justify-center gap-2 active:scale-[0.98] transition"
                 >
                   <span className="text-lg">{reagents[selectedReagent].emoji}</span>
@@ -247,8 +257,12 @@ export default function App() {
           </div>
         </div>
 
-        {/* 曜日表示付きカレンダー形式投薬記録表 */}
-        <div className="bg-[#0b0c12] border border-red-900/60 rounded-xl p-4 shadow-lg">
+        {/* 投薬完了時に浮き上がるカレンダー記録表 */}
+        <div className={`bg-[#0b0c12] border rounded-xl p-4 shadow-lg transition-all duration-500 ${
+          isMatrixHighlighted 
+            ? 'border-red-400 bg-red-950/50 scale-[1.03] shadow-[0_0_30px_rgba(239,68,68,0.6)] translate-y-[-4px]' 
+            : 'border-red-900/60'
+        }`}>
           <div className="text-center mb-3">
             <div className="text-[10px] tracking-widest text-red-500 uppercase font-semibold">Clinical Trial Matrix</div>
             <div className="flex items-center justify-center gap-3 mt-1 text-sm font-bold text-red-400">
@@ -290,14 +304,12 @@ export default function App() {
             ))}
           </div>
 
-          {/* カレンダーグリッド（曜日合わせの空セル ＋ 日付セル） */}
+          {/* カレンダーグリッド */}
           <div className="grid grid-cols-7 gap-1.5">
-            {/* 1日までの空白セル */}
             {Array.from({ length: firstDayOfWeek }, (_, i) => (
               <div key={`empty-${i}`} className="aspect-square" />
             ))}
 
-            {/* 各日付セル */}
             {Array.from({ length: daysInMonth }, (_, i) => {
               const day = i + 1;
               const dateKey = `${currentYear}-${currentMonth}-${day}`;
@@ -307,7 +319,7 @@ export default function App() {
               return (
                 <button
                   key={day}
-                  onClick={() => handleDayClick(day)}
+                  onClick={() => handleAdministerDose(day)}
                   className={`aspect-square rounded-lg border flex flex-col items-center justify-center relative transition ${
                     registeredReagent
                       ? 'border-red-500 bg-red-950/60 text-red-200 shadow-[0_0_8px_rgba(239,68,68,0.3)]'
