@@ -16,7 +16,6 @@ export default function App() {
   const [subjectName, setSubjectName] = useState('');
   const [logs, setLogs] = useState({});
   
-  // 表示中の年月を管理（初期値：2026年11月）
   const [currentYear, setCurrentYear] = useState(2026);
   const [currentMonth, setCurrentMonth] = useState(11);
 
@@ -136,21 +135,24 @@ export default function App() {
 
       <main className="px-4 py-5 space-y-5 relative z-10">
         
-        {/* ご要望に合わせた VITAL TELEMETRY パネル */}
+        {/* VITAL TELEMETRY パネル（両端のアイコンが点滅） */}
         <div className="bg-red-950/20 border border-red-900/60 rounded-xl p-3.5 relative">
           <div className="text-[10px] text-red-400 tracking-widest mb-1.5 font-medium">VITAL TELEMETRY</div>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="text-red-500">
+              {/* 左側：点滅する盾の警告アイコン */}
+              <div className="text-red-500 animate-pulse">
                 <ShieldAlert className="w-5 h-5" />
               </div>
               <div className="text-xs font-bold tracking-wider text-red-500 leading-tight">
                 STATUS: {isTodayDone ? 'STABLE / DOSAGE CONFIRMED' : 'CRITICAL / DOSAGE REQUIRED'}
               </div>
             </div>
-            {/* 右側のミニ心電図アイコン */}
-            <div className="text-red-500 font-bold tracking-tighter opacity-90 text-sm">
-              ~/\_/\
+            {/* 右側：画像通りの点滅するシャープな心電図SVGアイコン */}
+            <div className="text-red-500 animate-pulse flex items-center">
+              <svg width="48" height="20" viewBox="0 0 60 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="stroke-current stroke-[2] stroke-linejoin-round stroke-linecap-round">
+                <path d="M2 12H16L20 4L26 20L31 10L35 14L39 12H58" />
+              </svg>
             </div>
           </div>
         </div>
