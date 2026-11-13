@@ -23,10 +23,10 @@ const REAGENT_TYPES = [
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
 const STORAGE_KEYS = {
-  LOGS: 'vital_protocol_logs_v8',
-  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v8',
-  SUBJECT_NAME: 'vital_protocol_subject_name_v8',
-  SOUND_ENABLED: 'vital_protocol_sound_enabled_v8',
+  LOGS: 'vital_protocol_logs_v9',
+  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v9',
+  SUBJECT_NAME: 'vital_protocol_subject_name_v9',
+  SOUND_ENABLED: 'vital_protocol_sound_enabled_v9',
 };
 
 export default function App() {
@@ -289,8 +289,23 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#0A0A0A', color: '#F3F4F6', fontFamily: 'monospace', paddingBottom: '3rem' }}>
+    <div className="shutter-bg" style={{ minHeight: '100vh', color: '#F3F4F6', fontFamily: 'monospace', paddingBottom: '3rem' }}>
       <style>{`
+        /* シャッター・スキャンライン風のテクスチャー背景 */
+        .shutter-bg {
+          background-color: #080303;
+          background-image: linear-gradient(
+            rgba(18, 16, 16, 0) 50%, 
+            rgba(0, 0, 0, 0.45) 50%
+          ), linear-gradient(
+            90deg,
+            rgba(255, 0, 0, 0.03),
+            rgba(0, 255, 0, 0.01),
+            rgba(0, 0, 255, 0.03)
+          );
+          background-size: 100% 4px, 6px 100%;
+        }
+
         @keyframes emergencyBlinkSlow {
           0% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.9)); }
           50% { opacity: 0.25; transform: scale(0.93); filter: drop-shadow(0 0 0px rgba(239, 68, 68, 0)); }
@@ -357,10 +372,9 @@ export default function App() {
           <Activity className="animate-blink-slow" style={{ width: '22px', height: '22px', color: '#EF4444' }} />
         </div>
 
-        {/* スタッツ（画像通りの左右レイアウトに修正） */}
+        {/* スタッツ（左右レイアウト） */}
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px' }}>
           
-          {/* 連続投与日数カード（左にアイコン、右にテキスト） */}
           <div style={{ backgroundColor: '#0F0505', borderRadius: '12px', padding: '16px', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#2A0B0B', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <Activity style={{ width: '22px', height: '22px', color: '#EF4444' }} />
@@ -374,7 +388,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* 通算投薬数カード（左にアイコン、右にテキスト） */}
           <div style={{ backgroundColor: '#0F0505', borderRadius: '12px', padding: '16px', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#2A0B0B', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <Syringe style={{ width: '22px', height: '22px', color: '#EF4444' }} />
@@ -390,7 +403,7 @@ export default function App() {
 
         </section>
 
-        {/* メインアクションカード（DATEの🎯削除 ＆ 説明文すっきり化） */}
+        {/* メインアクションカード */}
         <section style={{ backgroundColor: '#0F0505', borderRadius: '12px', padding: '18px', border: '1px solid #7F1D1D', position: 'relative' }}>
           <div style={{ position: 'absolute', top: '8px', left: '8px', width: '6px', height: '6px', borderTop: '2px solid #EF4444', borderLeft: '2px solid #EF4444' }} />
           <div style={{ position: 'absolute', top: '8px', right: '8px', width: '6px', height: '6px', borderTop: '2px solid #EF4444', borderRight: '2px solid #EF4444' }} />
