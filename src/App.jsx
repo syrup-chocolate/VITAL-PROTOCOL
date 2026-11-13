@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  Activity, 
+  ShieldAlert, 
   Lock, 
   CheckCircle2, 
   Volume2, 
@@ -15,6 +15,10 @@ export default function App() {
   const [selectedReagent, setSelectedReagent] = useState('vaccine');
   const [subjectName, setSubjectName] = useState('');
   const [logs, setLogs] = useState({});
+  
+  // 表示中の年月を管理（初期値：2026年11月）
+  const [currentYear, setCurrentYear] = useState(2026);
+  const [currentMonth, setCurrentMonth] = useState(11);
 
   const playSound = (type) => {
     if (!soundEnabled) return;
@@ -44,15 +48,39 @@ export default function App() {
     serum: { name: '培養血清', emoji: '🧪', color: 'border-emerald-500 text-emerald-400 bg-emerald-950/30' }
   };
 
-  const year = 2026;
-  const month = 11;
-  const daysInMonth = 30;
-  const todayDay = 12; // 11月12日基準
+  const realTodayYear = 2026;
+  const realTodayMonth = 11;
+  const realTodayDay = 12;
+
+  const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+
+  const handlePrevMonth = () => {
+    playSound('click');
+    if (currentMonth === 1) {
+      if (currentYear > 2026) {
+        setCurrentYear(currentYear - 1);
+        setCurrentMonth(12);
+      }
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    playSound('click');
+    if (currentMonth === 12) {
+      if (currentYear < 2030) {
+        setCurrentYear(currentYear + 1);
+        setCurrentMonth(1);
+      }
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
+  };
 
   const handleDayClick = (day) => {
-    if (day > todayDay) return;
     playSound('click');
-    const dateKey = `${year}-${month}-${day}`;
+    const dateKey = `${currentYear}-${currentMonth}-${day}`;
     setLogs(prev => {
       const newLogs = { ...prev };
       if (newLogs[dateKey] === selectedReagent) {
@@ -64,15 +92,14 @@ export default function App() {
     });
   };
 
-  const todayKey = `${year}-${month}-${todayDay}`;
+  const todayKey = `${realTodayYear}-${realTodayMonth}-${realTodayDay}`;
   const isTodayDone = !!logs[todayKey];
 
   const calculateStreak = () => {
     let streak = 0;
-    for (let d = todayDay; d >= 1; d--) {
-      const k = `${year}-${month}-${d}`;
-      if (logs[k]) streak++;
-      else if (d !== todayDay) break;
+    const totalKeys = Object.keys(logs).sort();
+    if (totalKeys.length > 0) {
+      streak = totalKeys.length;
     }
     return streak;
   };
@@ -86,7 +113,7 @@ export default function App() {
       {/* CRT走査線エフェクト */}
       <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] z-50 opacity-60" />
 
-      {/* ヘッダー (ご要望の抗体コードA(☣️)アイコンを配置) */}
+      {/* ヘッダー */}
       <header className="px-5 pt-6 pb-4 border-b border-red-900/50 bg-[#0d0e15]/95 backdrop-blur sticky top-0 z-30 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded bg-red-950/80 border border-orange-600/60 flex items-center justify-center animate-pulse shadow-[0_0_12px_rgba(249,115,22,0.4)] text-xl">
@@ -109,22 +136,21 @@ export default function App() {
 
       <main className="px-4 py-5 space-y-5 relative z-10">
         
-        {/* バイタル監視モニター (流れる心電図アニメーション) */}
-        <div className="bg-red-950/20 border border-red-900/60 rounded-lg p-3.5 relative overflow-hidden">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center space-x-2 text-xs">
-              <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping" />
-              <span className="text-red-400 font-bold tracking-wider">
+        {/* ご要望に合わせた VITAL TELEMETRY パネル */}
+        <div className="bg-red-950/20 border border-red-900/60 rounded-xl p-3.5 relative">
+          <div className="text-[10px] text-red-400 tracking-widest mb-1.5 font-medium">VITAL TELEMETRY</div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="text-red-500">
+                <ShieldAlert className="w-5 h-5" />
+              </div>
+              <div className="text-xs font-bold tracking-wider text-red-500 leading-tight">
                 STATUS: {isTodayDone ? 'STABLE / DOSAGE CONFIRMED' : 'CRITICAL / DOSAGE REQUIRED'}
-              </span>
+              </div>
             </div>
-            <Activity className="w-5 h-5 text-red-500 animate-pulse" />
-          </div>
-          
-          {/* 流れる心電図アニメーション表現 */}
-          <div className="h-7 w-full overflow-hidden relative flex items-center">
-            <div className="absolute whitespace-nowrap text-red-500 font-bold text-xs tracking-widest animate-[marquee_3s_linear_infinite] opacity-90">
-              ~/\_/\___/\/\___/‾‾‾~/\_/\___/\/\___/‾‾‾~/\_/\___/\/\___/‾‾‾
+            {/* 右側のミニ心電図アイコン */}
+            <div className="text-red-500 font-bold tracking-tighter opacity-90 text-sm">
+              ~/\_/\
             </div>
           </div>
         </div>
@@ -147,7 +173,7 @@ export default function App() {
         <div className="bg-gradient-to-b from-red-950/40 to-[#12080a] border border-red-800/80 rounded-xl p-4 relative shadow-[0_0_20px_rgba(220,38,38,0.2)]">
           <div className="text-[10px] text-red-400 border-b border-red-900/40 pb-1.5 mb-3 flex justify-between items-center">
             <span className="flex items-center gap-1 font-semibold">
-              <AlertTriangle className="w-3.5 h-3.5 text-red-500" /> DATE: 2026.11.12
+              <AlertTriangle className="w-3.5 h-3.5 text-red-500" /> DATE: {realTodayYear}.{realTodayMonth}.{realTodayDay}
             </span>
             <span>SECURE TERMINAL</span>
           </div>
@@ -165,7 +191,7 @@ export default function App() {
               <div>
                 <p className="text-xs text-red-300 mb-3">感染進行を抑制するため、本日の投薬プロトコルを実行してください。</p>
                 <button
-                  onClick={() => handleDayClick(todayDay)}
+                  onClick={() => handleDayClick(realTodayDay)}
                   className="w-full py-3.5 px-4 rounded-lg bg-gradient-to-r from-red-700 via-red-600 to-red-800 text-white font-bold text-sm tracking-widest border border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)] flex items-center justify-center gap-2 active:scale-[0.98] transition"
                 >
                   <span className="text-lg">{reagents[selectedReagent].emoji}</span>
@@ -195,14 +221,26 @@ export default function App() {
           </div>
         </div>
 
-        {/* カレンダー形式の継続・投薬記録マトリックス */}
+        {/* 2030年まで対応のカレンダー形式投薬記録表 */}
         <div className="bg-[#0b0c12] border border-red-900/60 rounded-xl p-4 shadow-lg">
           <div className="text-center mb-3">
             <div className="text-[10px] tracking-widest text-red-500 uppercase font-semibold">Clinical Trial Matrix</div>
             <div className="flex items-center justify-center gap-3 mt-1 text-sm font-bold text-red-400">
-              <button onClick={() => playSound('click')} className="p-1 hover:text-white transition"><ChevronLeft className="w-4 h-4" /></button>
-              <span className="tracking-widest">2026年 11月 投薬記録表</span>
-              <button onClick={() => playSound('click')} className="p-1 hover:text-white transition"><ChevronRight className="w-4 h-4" /></button>
+              <button 
+                onClick={handlePrevMonth} 
+                disabled={currentYear === 2026 && currentMonth === 1}
+                className="p-1 hover:text-white transition disabled:opacity-30"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="tracking-widest">{currentYear}年 {currentMonth}月 投薬記録表</span>
+              <button 
+                onClick={handleNextMonth} 
+                disabled={currentYear === 2030 && currentMonth === 12}
+                className="p-1 hover:text-white transition disabled:opacity-30"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
@@ -220,29 +258,25 @@ export default function App() {
           <div className="grid grid-cols-5 gap-2">
             {Array.from({ length: daysInMonth }, (_, i) => {
               const day = i + 1;
-              const dateKey = `${year}-${month}-${day}`;
+              const dateKey = `${currentYear}-${currentMonth}-${day}`;
               const registeredReagent = logs[dateKey];
-              const isFuture = day > todayDay;
-              const isToday = day === todayDay;
+              const isToday = currentYear === realTodayYear && currentMonth === realTodayMonth && day === realTodayDay;
 
               return (
                 <button
                   key={day}
-                  disabled={isFuture}
                   onClick={() => handleDayClick(day)}
                   className={`aspect-square rounded-lg border flex flex-col items-center justify-center relative transition ${
-                    isFuture 
-                      ? 'border-red-950/40 bg-black/20 text-red-950 opacity-40' 
-                      : registeredReagent
-                        ? 'border-red-500 bg-red-950/60 text-red-200 shadow-[0_0_8px_rgba(239,68,68,0.3)]'
-                        : isToday
-                          ? 'border-red-500 bg-red-950/30 text-red-400 ring-1 ring-red-500'
-                          : 'border-red-950 bg-black/50 text-red-600 hover:border-red-800'
+                    registeredReagent
+                      ? 'border-red-500 bg-red-950/60 text-red-200 shadow-[0_0_8px_rgba(239,68,68,0.3)]'
+                      : isToday
+                        ? 'border-red-500 bg-red-950/30 text-red-400 ring-1 ring-red-500'
+                        : 'border-red-950 bg-black/50 text-red-600 hover:border-red-800'
                   }`}
                 >
                   <span className={`text-[10px] font-bold ${isToday ? 'underline' : ''}`}>{String(day).padStart(2, '0')}</span>
                   <span className="mt-0.5 text-sm">
-                    {registeredReagent ? reagents[registeredReagent].emoji : isFuture ? <Lock className="w-3 h-3 text-red-950" /> : <span className="text-[9px] text-red-800">未</span>}
+                    {registeredReagent ? reagents[registeredReagent].emoji : <span className="text-[9px] text-red-800">未</span>}
                   </span>
                 </button>
               );
@@ -256,13 +290,6 @@ export default function App() {
         CONFIDENTIAL // UMBRELLA BIO-LAB SYSTEM v3.4.2
       </footer>
 
-      {/* スムーズな心電図スクロール用のアニメーション定義 */}
-      <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(0%); }
-          100% { transform: translateX(-50%); }
-        }
-      `}</style>
     </div>
   );
 }
