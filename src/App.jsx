@@ -17,7 +17,6 @@ export default function App() {
     return localStorage.getItem('vital_subject_name') || '';
   });
   
-  // 保存された記録を読み込む（初期値）
   const [logs, setLogs] = useState(() => {
     try {
       const saved = localStorage.getItem('vital_protocol_logs');
@@ -30,7 +29,6 @@ export default function App() {
   const [currentYear, setCurrentYear] = useState(2026);
   const [currentMonth, setCurrentMonth] = useState(11);
 
-  // 記録や名前が変わるたびにブラウザに自動保存する
   useEffect(() => {
     try {
       localStorage.setItem('vital_protocol_logs', JSON.stringify(logs));
@@ -75,7 +73,9 @@ export default function App() {
   const realTodayMonth = 11;
   const realTodayDay = 12;
 
+  // 選択中年月の日数と、1日目の曜日（0=日, 1=月...）を計算
   const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+  const firstDayOfWeek = new Date(currentYear, currentMonth - 1, 1).getDay();
 
   const handlePrevMonth = () => {
     playSound('click');
@@ -129,6 +129,8 @@ export default function App() {
 
   const totalDoses = Object.keys(logs).length;
   const streakCount = calculateStreak();
+
+  const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
 
   return (
     <div className="max-w-[480px] mx-auto min-h-screen bg-[#090a0f] text-red-500 font-mono relative overflow-x-hidden pb-12 select-none border-x border-red-950 shadow-2xl">
@@ -213,7 +215,7 @@ export default function App() {
               </div>
             ) : (
               <div>
-                <p className="text-xs text-red-300 mb-3">感染進行を抑制するため、本日の投薬プロトコルを実行してください。</p>
+                <p className="text-xs text-red-300 mb-3">感染進行を抑制するため、本日のプロトコルを実行してください。</p>
                 <button
                   onClick={() => handleDayClick(realTodayDay)}
                   className="w-full py-3.5 px-4 rounded-lg bg-gradient-to-r from-red-700 via-red-600 to-red-800 text-white font-bold text-sm tracking-widest border border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)] flex items-center justify-center gap-2 active:scale-[0.98] transition"
@@ -245,7 +247,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* 2030年まで対応のカレンダー形式投薬記録表 */}
+        {/* 曜日表示付きカレンダー形式投薬記録表 */}
         <div className="bg-[#0b0c12] border border-red-900/60 rounded-xl p-4 shadow-lg">
           <div className="text-center mb-3">
             <div className="text-[10px] tracking-widest text-red-500 uppercase font-semibold">Clinical Trial Matrix</div>
@@ -279,7 +281,23 @@ export default function App() {
             />
           </div>
 
-          <div className="grid grid-cols-5 gap-2">
+          {/* 曜日ヘッダー */}
+          <div className="grid grid-cols-7 gap-1.5 mb-1.5 text-center text-[10px] font-bold text-red-400">
+            {weekdays.map((w, idx) => (
+              <div key={idx} className={`${idx === 0 ? 'text-red-400' : idx === 6 ? 'text-red-400' : 'text-red-500'}`}>
+                {w}
+              </div>
+            ))}
+          </div>
+
+          {/* カレンダーグリッド（曜日合わせの空セル ＋ 日付セル） */}
+          <div className="grid grid-cols-7 gap-1.5">
+            {/* 1日までの空白セル */}
+            {Array.from({ length: firstDayOfWeek }, (_, i) => (
+              <div key={`empty-${i}`} className="aspect-square" />
+            ))}
+
+            {/* 各日付セル */}
             {Array.from({ length: daysInMonth }, (_, i) => {
               const day = i + 1;
               const dateKey = `${currentYear}-${currentMonth}-${day}`;
@@ -298,9 +316,9 @@ export default function App() {
                         : 'border-red-950 bg-black/50 text-red-600 hover:border-red-800'
                   }`}
                 >
-                  <span className={`text-[10px] font-bold ${isToday ? 'underline' : ''}`}>{String(day).padStart(2, '0')}</span>
-                  <span className="mt-0.5 text-sm">
-                    {registeredReagent ? reagents[registeredReagent].emoji : <span className="text-[9px] text-red-800">未</span>}
+                  <span className={`text-[9px] font-bold ${isToday ? 'underline' : ''}`}>{String(day).padStart(2, '0')}</span>
+                  <span className="mt-0.5 text-xs">
+                    {registeredReagent ? reagents[registeredReagent].emoji : <span className="text-[8px] text-red-800">未</span>}
                   </span>
                 </button>
               );
