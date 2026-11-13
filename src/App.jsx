@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  ShieldAlert, 
   Activity, 
   Lock, 
   CheckCircle2, 
@@ -17,7 +16,6 @@ export default function App() {
   const [subjectName, setSubjectName] = useState('');
   const [logs, setLogs] = useState({});
 
-  // サウンド再生ヘルパー
   const playSound = (type) => {
     if (!soundEnabled) return;
     try {
@@ -39,7 +37,6 @@ export default function App() {
     }
   };
 
-  // 4種類の試薬定義
   const reagents = {
     capsule: { name: 'カプセル製剤', emoji: '💊', color: 'border-yellow-500 text-yellow-400 bg-yellow-950/30' },
     vaccine: { name: 'シリンジワクチン', emoji: '💉', color: 'border-red-500 text-red-400 bg-red-950/30' },
@@ -70,7 +67,6 @@ export default function App() {
   const todayKey = `${year}-${month}-${todayDay}`;
   const isTodayDone = !!logs[todayKey];
 
-  // 連続投与日数の計算
   const calculateStreak = () => {
     let streak = 0;
     for (let d = todayDay; d >= 1; d--) {
@@ -87,14 +83,14 @@ export default function App() {
   return (
     <div className="max-w-[480px] mx-auto min-h-screen bg-[#090a0f] text-red-500 font-mono relative overflow-x-hidden pb-12 select-none border-x border-red-950 shadow-2xl">
       
-      {/* 走査線エフェクト */}
+      {/* CRT走査線エフェクト */}
       <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] z-50 opacity-60" />
 
-      {/* ヘッダー */}
+      {/* ヘッダー (ご要望の抗体コードA(☣️)アイコンを配置) */}
       <header className="px-5 pt-6 pb-4 border-b border-red-900/50 bg-[#0d0e15]/95 backdrop-blur sticky top-0 z-30 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded bg-red-950/80 border border-red-600/60 flex items-center justify-center animate-pulse shadow-[0_0_12px_rgba(220,38,38,0.4)]">
-            <ShieldAlert className="w-6 h-6 text-red-500" />
+          <div className="w-10 h-10 rounded bg-red-950/80 border border-orange-600/60 flex items-center justify-center animate-pulse shadow-[0_0_12px_rgba(249,115,22,0.4)] text-xl">
+            ☣️
           </div>
           <div>
             <div className="text-[10px] tracking-widest text-red-400 font-semibold">MEDICAL RESEARCH // LAB-OS</div>
@@ -113,8 +109,8 @@ export default function App() {
 
       <main className="px-4 py-5 space-y-5 relative z-10">
         
-        {/* バイタル監視モニター */}
-        <div className="bg-red-950/20 border border-red-900/60 rounded-lg p-3.5 relative">
+        {/* バイタル監視モニター (流れる心電図アニメーション) */}
+        <div className="bg-red-950/20 border border-red-900/60 rounded-lg p-3.5 relative overflow-hidden">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2 text-xs">
               <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping" />
@@ -124,10 +120,12 @@ export default function App() {
             </div>
             <Activity className="w-5 h-5 text-red-500 animate-pulse" />
           </div>
-          <div className="h-6 w-full flex items-center overflow-hidden opacity-80 text-xs">
-            <span className="text-red-500 font-bold animate-[pulse_1s_infinite] tracking-widest">
-              ~/\_/\___/\/\___/‾‾‾
-            </span>
+          
+          {/* 流れる心電図アニメーション表現 */}
+          <div className="h-7 w-full overflow-hidden relative flex items-center">
+            <div className="absolute whitespace-nowrap text-red-500 font-bold text-xs tracking-widest animate-[marquee_3s_linear_infinite] opacity-90">
+              ~/\_/\___/\/\___/‾‾‾~/\_/\___/\/\___/‾‾‾~/\_/\___/\/\___/‾‾‾
+            </div>
           </div>
         </div>
 
@@ -197,7 +195,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* クリニカル・トライアル・マトリックス (30日記録表) */}
+        {/* カレンダー形式の継続・投薬記録マトリックス */}
         <div className="bg-[#0b0c12] border border-red-900/60 rounded-xl p-4 shadow-lg">
           <div className="text-center mb-3">
             <div className="text-[10px] tracking-widest text-red-500 uppercase font-semibold">Clinical Trial Matrix</div>
@@ -258,6 +256,13 @@ export default function App() {
         CONFIDENTIAL // UMBRELLA BIO-LAB SYSTEM v3.4.2
       </footer>
 
+      {/* スムーズな心電図スクロール用のアニメーション定義 */}
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
     </div>
   );
 }
