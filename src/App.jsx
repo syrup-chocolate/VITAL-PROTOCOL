@@ -23,10 +23,10 @@ const REAGENT_TYPES = [
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
 const STORAGE_KEYS = {
-  LOGS: 'vital_protocol_logs_v6',
-  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v6',
-  SUBJECT_NAME: 'vital_protocol_subject_name_v6',
-  SOUND_ENABLED: 'vital_protocol_sound_enabled_v6',
+  LOGS: 'vital_protocol_logs_v7',
+  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v7',
+  SUBJECT_NAME: 'vital_protocol_subject_name_v7',
+  SOUND_ENABLED: 'vital_protocol_sound_enabled_v7',
 };
 
 export default function App() {
@@ -88,7 +88,7 @@ export default function App() {
       console.error(err);
     }
 
-    // すでに本日の記録がある場合、試薬を切り替えた瞬間に本日のスタンプも新しいものに置き換える
+    // 本日の記録がすでに存在する場合は、試薬を変更した瞬間に上書きする
     if (logs[todayKey]) {
       setLogs((prev) => ({ ...prev, [todayKey]: id }));
       playInjectSound();
@@ -147,6 +147,29 @@ export default function App() {
     }
   };
 
+  const playRemoveSound = () => {
+    if (!soundEnabled) return;
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(160, now + 0.1);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.005, now + 0.1);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.1);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // 連続日数の正しい計算ロジック
   const calculateStreak = () => {
     let streak = 0;
@@ -190,15 +213,27 @@ export default function App() {
   const handleTodayInject = () => {
     if (isInjecting) return;
     setIsInjecting(true);
-    playInjectSound();
 
     setViewYear(realTodayYear);
     setViewMonth(realTodayMonth - 1);
 
     setTimeout(() => {
-      setLogs((prev) => ({ ...prev, [todayKey]: selectedReagent }));
+      setLogs((prev) => {
+        const updated = { ...prev };
+        if (updated[todayKey]) {
+          // すでに記録されている場合は削除（取り消し）
+          delete updated[todayKey];
+          playRemoveSound();
+          triggerToast('本日の投薬ログを取り消しました');
+        } else {
+          // 未記録の場合は新規追加
+          updated[todayKey] = selectedReagent;
+          playInjectSound();
+          triggerToast('本日の投与を記録しました！');
+        }
+        return updated;
+      });
       setIsInjecting(false);
-      triggerToast(isTodayDone ? '本日のスタンプを上書き変更しました！' : '本日の投与を記録しました！');
       scrollToMatrix();
     }, 220);
   };
@@ -214,17 +249,13 @@ export default function App() {
       return;
     }
 
-    if (cellYear === realTodayYear && cellMonth === realTodayMonth && cellDay === realTodayDay) {
-      handleTodayInject();
-      return;
-    }
-
+    // 本日または過去日の切り替え・削除処理
     setLogs((prev) => {
       const updated = { ...prev };
       if (updated[key]) {
-        // すでに押されている場合は選択中の試薬に上書き（またはトグル削除にしたい場合は delete にもできますが、今回は上書き・切り替え対応）
         if (updated[key] === selectedReagent) {
           delete updated[key];
+          playRemoveSound();
           triggerToast('投薬ログを削除しました');
         } else {
           updated[key] = selectedReagent;
@@ -234,6 +265,7 @@ export default function App() {
       } else {
         updated[key] = selectedReagent;
         playInjectSound();
+        triggerToast(cellYear === realTodayYear && cellMonth === realTodayMonth && cellDay === realTodayDay ? '本日の投与を記録しました！' : '過去の投与を記録しました');
       }
       return updated;
     });
@@ -374,7 +406,7 @@ export default function App() {
               🎯 DATE: {realTodayYear}.{String(realTodayMonth).padStart(2, '0')}.{String(realTodayDay).padStart(2, '0')}
             </span>
             <p style={{ fontSize: '12px', color: '#D1D5DB', margin: '12px 0 14px 0', lineHeight: '1.5' }}>
-              感染進行を抑制するため、本日の投薬プロトコルを実行してください。（試薬を変更して再記録も可能）
+              感染進行を抑制するため、本日の投薬プロトコルを実行してください。（もう一度押すと取り消し可能）
             </p>
 
             <button
@@ -389,7 +421,7 @@ export default function App() {
                   : 'repeating-linear-gradient(45deg, #DC2626, #DC2626 10px, #B91C1C 10px, #B91C1C 20px)',
                 color: '#FFF',
                 fontWeight: 900,
-                fontSize: '16px',
+                fontSize: '15px',
                 border: isTodayDone ? '1px solid #059669' : '1px solid #EF4444',
                 cursor: 'pointer',
                 boxShadow: '0 4px 15px rgba(220,38,38,0.4)',
@@ -401,7 +433,7 @@ export default function App() {
               }}
             >
               <span>{isTodayDone ? '✅' : '💉'}</span>
-              <span>{isTodayDone ? 'ADMINISTER DOSE ( 投与完了・変更する )' : 'ADMINISTER DOSE ( 本日の投与を記録 )'}</span>
+              <span>{isTodayDone ? 'ADMINISTER DOSE ( 投与完了・タップで取消 )' : 'ADMINISTER DOSE ( 本日の投与を記録 )'}</span>
             </button>
           </div>
 
