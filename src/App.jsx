@@ -14,7 +14,7 @@ export default function App() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [selectedReagent, setSelectedReagent] = useState('vaccine');
   const [subjectName, setSubjectName] = useState(() => {
-    return localStorage.getItem('vital_subject_name') || '';
+    return localStorage.getItem('vital_subject_name'] || '';
   });
   
   const [logs, setLogs] = useState(() => {
@@ -72,9 +72,10 @@ export default function App() {
     serum: { name: '培養血清', emoji: '🧪', color: 'border-emerald-500 text-emerald-400 bg-emerald-950/30' }
   };
 
+  // 正しい本日日付（2026年11月13日）を設定
   const realTodayYear = 2026;
   const realTodayMonth = 11;
-  const realTodayDay = 12;
+  const realTodayDay = 13;
 
   const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
   const firstDayOfWeek = new Date(currentYear, currentMonth - 1, 1).getDay();
@@ -103,7 +104,6 @@ export default function App() {
     }
   };
 
-  // 未来日かどうかを判定する関数
   const isFutureDate = (year, month, day) => {
     if (year > realTodayYear) return true;
     if (year === realTodayYear && month > realTodayMonth) return true;
@@ -111,11 +111,23 @@ export default function App() {
     return false;
   };
 
-  // カレンダーの日付クリック時（未来日の場合は処理を弾く）
+  const scrollToMatrix = () => {
+    setIsMatrixHighlighted(true);
+    setTimeout(() => {
+      setIsMatrixHighlighted(false);
+    }, 1000);
+
+    setTimeout(() => {
+      if (matrixRef.current) {
+        matrixRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 50);
+  };
+
   const handleCalendarDayClick = (day) => {
     if (isFutureDate(currentYear, currentMonth, day)) {
       playSound('click');
-      return; // 未来日の場合は何もしない（ロック）
+      return; // 未来日の場合はスタンプを押させない
     }
 
     playSound('click');
@@ -130,19 +142,12 @@ export default function App() {
       }
       return newLogs;
     });
+
+    scrollToMatrix();
   };
 
-  // 本日の投薬ボタン用
   const handleAdministerToday = () => {
     handleCalendarDayClick(realTodayDay);
-    setIsMatrixHighlighted(true);
-    setTimeout(() => {
-      setIsMatrixHighlighted(false);
-    }, 1000);
-
-    if (matrixRef.current) {
-      matrixRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
   };
 
   const todayKey = `${realTodayYear}-${realTodayMonth}-${realTodayDay}`;
@@ -225,7 +230,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* 本日のクイックチェックイン */}
+        {/* 本日のクイックチェックイン（2026.11.13） */}
         <div className="bg-gradient-to-b from-red-950/40 to-[#12080a] border border-red-800/80 rounded-xl p-4 relative shadow-[0_0_20px_rgba(220,38,38,0.2)]">
           <div className="text-[10px] text-red-400 border-b border-red-900/40 pb-1.5 mb-3 flex justify-between items-center">
             <span className="flex items-center gap-1 font-semibold">
@@ -277,7 +282,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* カレンダー記録表（未来日ロック対応） */}
+        {/* カレンダー記録表（未来日は数字を表示しつつ鍵アイコンでロック） */}
         <div 
           ref={matrixRef}
           className={`bg-[#0b0c12] border rounded-xl p-4 shadow-lg transition-all duration-700 scroll-mt-24 ${
@@ -347,7 +352,7 @@ export default function App() {
                   disabled={isFuture}
                   className={`aspect-square rounded-lg border flex flex-col items-center justify-center relative transition ${
                     isFuture
-                      ? 'border-red-950/30 bg-black/20 text-red-950 opacity-30 cursor-not-allowed'
+                      ? 'border-red-950/50 bg-black/30 text-red-700/60 opacity-60'
                       : registeredReagent
                         ? 'border-red-500 bg-red-950/60 text-red-200 shadow-[0_0_8px_rgba(239,68,68,0.3)]'
                         : isToday
@@ -355,12 +360,12 @@ export default function App() {
                           : 'border-red-950 bg-black/50 text-red-600 hover:border-red-800'
                   }`}
                 >
-                  <span className={`text-[9px] font-bold ${isToday ? 'underline' : ''}`}>{String(day).payroll || String(day).padStart(2, '0')}</span>
+                  <span className={`text-[9px] font-bold ${isToday ? 'underline' : ''}`}>{String(day).padStart(2, '0')}</span>
                   <span className="mt-0.5 text-xs">
                     {registeredReagent 
                       ? reagents[registeredReagent].emoji 
                       : isFuture 
-                        ? <Lock className="w-3 h-3 text-red-900" /> 
+                        ? <Lock className="w-3 h-3 text-red-800/80" /> 
                         : <span className="text-[8px] text-red-800">未</span>
                     }
                   </span>
