@@ -23,10 +23,10 @@ const REAGENT_TYPES = [
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
 const STORAGE_KEYS = {
-  LOGS: 'vital_protocol_logs_v5',
-  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v5',
-  SUBJECT_NAME: 'vital_protocol_subject_name_v5',
-  SOUND_ENABLED: 'vital_protocol_sound_enabled_v5',
+  LOGS: 'vital_protocol_logs_v6',
+  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v6',
+  SUBJECT_NAME: 'vital_protocol_subject_name_v6',
+  SOUND_ENABLED: 'vital_protocol_sound_enabled_v6',
 };
 
 export default function App() {
@@ -86,6 +86,13 @@ export default function App() {
       localStorage.setItem(STORAGE_KEYS.SELECTED_REAGENT, id);
     } catch (err) {
       console.error(err);
+    }
+
+    // すでに本日の記録がある場合、試薬を切り替えた瞬間に本日のスタンプも新しいものに置き換える
+    if (logs[todayKey]) {
+      setLogs((prev) => ({ ...prev, [todayKey]: id }));
+      playInjectSound();
+      triggerToast('本日のスタンプを別の試薬に変更しました');
     }
   };
 
@@ -181,7 +188,7 @@ export default function App() {
   };
 
   const handleTodayInject = () => {
-    if (isTodayDone || isInjecting) return;
+    if (isInjecting) return;
     setIsInjecting(true);
     playInjectSound();
 
@@ -191,6 +198,7 @@ export default function App() {
     setTimeout(() => {
       setLogs((prev) => ({ ...prev, [todayKey]: selectedReagent }));
       setIsInjecting(false);
+      triggerToast(isTodayDone ? '本日のスタンプを上書き変更しました！' : '本日の投与を記録しました！');
       scrollToMatrix();
     }, 220);
   };
@@ -207,19 +215,22 @@ export default function App() {
     }
 
     if (cellYear === realTodayYear && cellMonth === realTodayMonth && cellDay === realTodayDay) {
-      if (!isTodayDone) {
-        handleTodayInject();
-      } else {
-        triggerToast('本日の投与はすでに記録されています');
-        scrollToMatrix();
-      }
+      handleTodayInject();
       return;
     }
 
     setLogs((prev) => {
       const updated = { ...prev };
       if (updated[key]) {
-        delete updated[key];
+        // すでに押されている場合は選択中の試薬に上書き（またはトグル削除にしたい場合は delete にもできますが、今回は上書き・切り替え対応）
+        if (updated[key] === selectedReagent) {
+          delete updated[key];
+          triggerToast('投薬ログを削除しました');
+        } else {
+          updated[key] = selectedReagent;
+          playInjectSound();
+          triggerToast('別の試薬に変更しました');
+        }
       } else {
         updated[key] = selectedReagent;
         playInjectSound();
@@ -279,7 +290,6 @@ export default function App() {
       <header style={{ width: '100%', backgroundColor: '#0F0505', borderBottom: '1px solid #7F1D1D', position: 'sticky', top: 0, zIndex: 30 }}>
         <div style={{ maxWidth: '32rem', margin: '0 auto', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {/* 絵文字のゆっくり点滅 */}
             <span className="animate-blink-slow" style={{ fontSize: '24px', lineHeight: 1 }}>☣️</span>
             <div>
               <p style={{ fontSize: '9px', color: '#9CA3AF', margin: 0, letterSpacing: '0.1em' }}>MEDICAL RESEARCH // LAB-OS</p>
@@ -316,14 +326,11 @@ export default function App() {
               </p>
             </div>
           </div>
-          {/* バイタルのゆっくり点滅 */}
           <Activity className="animate-blink-slow" style={{ width: '22px', height: '22px', color: '#EF4444' }} />
         </div>
 
-        {/* スタッツ（SURVIVAL STREAK & TOTAL DOSES / ご提示いただいた画像通りのアイコン配置） */}
+        {/* スタッツ */}
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px' }}>
-          
-          {/* 連続投与日数カード（内部に心電図アイコン） */}
           <div style={{ backgroundColor: '#0F0505', borderRadius: '12px', padding: '16px', border: '1px solid #7F1D1D', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
               <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#2A0B0B', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -339,7 +346,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* 通算投薬数カード（内部に注射器アイコン） */}
           <div style={{ backgroundColor: '#0F0505', borderRadius: '12px', padding: '16px', border: '1px solid #7F1D1D', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
               <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#2A0B0B', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -354,10 +360,9 @@ export default function App() {
               </p>
             </div>
           </div>
-
         </section>
 
-        {/* メインアクションカード（ADMINISTER DOSE） */}
+        {/* メインアクションカード */}
         <section style={{ backgroundColor: '#0F0505', borderRadius: '12px', padding: '18px', border: '1px solid #7F1D1D', position: 'relative' }}>
           <div style={{ position: 'absolute', top: '8px', left: '8px', width: '6px', height: '6px', borderTop: '2px solid #EF4444', borderLeft: '2px solid #EF4444' }} />
           <div style={{ position: 'absolute', top: '8px', right: '8px', width: '6px', height: '6px', borderTop: '2px solid #EF4444', borderRight: '2px solid #EF4444' }} />
@@ -369,44 +374,39 @@ export default function App() {
               🎯 DATE: {realTodayYear}.{String(realTodayMonth).padStart(2, '0')}.{String(realTodayDay).padStart(2, '0')}
             </span>
             <p style={{ fontSize: '12px', color: '#D1D5DB', margin: '12px 0 14px 0', lineHeight: '1.5' }}>
-              感染進行を抑制するため、本日の投薬プロトコルを実行してください。
+              感染進行を抑制するため、本日の投薬プロトコルを実行してください。（試薬を変更して再記録も可能）
             </p>
 
-            {isTodayDone ? (
-              <div style={{ width: '100%', padding: '16px', borderRadius: '8px', backgroundColor: '#064E3B', border: '1px solid #059669', color: '#34D399', fontWeight: 900, fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxSizing: 'border-box' }}>
-                <CheckCircle2 style={{ width: '22px', height: '22px' }} />
-                <span>ADMINISTER DOSE ( 投与完了 )</span>
-              </div>
-            ) : (
-              <button
-                onClick={handleTodayInject}
-                disabled={isInjecting}
-                style={{
-                  width: '100%',
-                  padding: '16px',
-                  borderRadius: '8px',
-                  background: 'repeating-linear-gradient(45deg, #DC2626, #DC2626 10px, #B91C1C 10px, #B91C1C 20px)',
-                  color: '#FFF',
-                  fontWeight: 900,
-                  fontSize: '16px',
-                  border: '1px solid #EF4444',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 15px rgba(220,38,38,0.4)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  letterSpacing: '0.05em'
-                }}
-              >
-                <span>💉</span>
-                <span>ADMINISTER DOSE ( 本日の投与を記録 )</span>
-              </button>
-            )}
+            <button
+              onClick={handleTodayInject}
+              disabled={isInjecting}
+              style={{
+                width: '100%',
+                padding: '16px',
+                borderRadius: '8px',
+                background: isTodayDone 
+                  ? '#064E3B' 
+                  : 'repeating-linear-gradient(45deg, #DC2626, #DC2626 10px, #B91C1C 10px, #B91C1C 20px)',
+                color: '#FFF',
+                fontWeight: 900,
+                fontSize: '16px',
+                border: isTodayDone ? '1px solid #059669' : '1px solid #EF4444',
+                cursor: 'pointer',
+                boxShadow: '0 4px 15px rgba(220,38,38,0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                letterSpacing: '0.05em'
+              }}
+            >
+              <span>{isTodayDone ? '✅' : '💉'}</span>
+              <span>{isTodayDone ? 'ADMINISTER DOSE ( 投与完了・変更する )' : 'ADMINISTER DOSE ( 本日の投与を記録 )'}</span>
+            </button>
           </div>
 
           <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid #7F1D1D' }}>
-            <p style={{ fontSize: '10px', color: '#9CA3AF', marginBottom: '8px', fontWeight: 700, letterSpacing: '0.05em' }}>REAGENT TYPE:</p>
+            <p style={{ fontSize: '10px', color: '#9CA3AF', marginBottom: '8px', fontWeight: 700, letterSpacing: '0.05em' }}>REAGENT TYPE (選択中の試薬):</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '6px' }}>
               {REAGENT_TYPES.map((reagent) => {
                 const isSelected = selectedReagent === reagent.id;
@@ -439,7 +439,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* CLINICAL TRIAL MATRIX（投薬記録表） */}
+        {/* 投薬記録表 */}
         <section 
           ref={matrixRef}
           style={{
