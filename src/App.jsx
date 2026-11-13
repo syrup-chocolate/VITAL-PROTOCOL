@@ -23,10 +23,10 @@ const REAGENT_TYPES = [
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
 const STORAGE_KEYS = {
-  LOGS: 'vital_protocol_logs_v7',
-  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v7',
-  SUBJECT_NAME: 'vital_protocol_subject_name_v7',
-  SOUND_ENABLED: 'vital_protocol_sound_enabled_v7',
+  LOGS: 'vital_protocol_logs_v8',
+  SELECTED_REAGENT: 'vital_protocol_selected_reagent_v8',
+  SUBJECT_NAME: 'vital_protocol_subject_name_v8',
+  SOUND_ENABLED: 'vital_protocol_sound_enabled_v8',
 };
 
 export default function App() {
@@ -88,7 +88,6 @@ export default function App() {
       console.error(err);
     }
 
-    // 本日の記録がすでに存在する場合は、試薬を変更した瞬間に上書きする
     if (logs[todayKey]) {
       setLogs((prev) => ({ ...prev, [todayKey]: id }));
       playInjectSound();
@@ -221,12 +220,10 @@ export default function App() {
       setLogs((prev) => {
         const updated = { ...prev };
         if (updated[todayKey]) {
-          // すでに記録されている場合は削除（取り消し）
           delete updated[todayKey];
           playRemoveSound();
           triggerToast('本日の投薬ログを取り消しました');
         } else {
-          // 未記録の場合は新規追加
           updated[todayKey] = selectedReagent;
           playInjectSound();
           triggerToast('本日の投与を記録しました！');
@@ -249,7 +246,6 @@ export default function App() {
       return;
     }
 
-    // 本日または過去日の切り替え・削除処理
     setLogs((prev) => {
       const updated = { ...prev };
       if (updated[key]) {
@@ -361,40 +357,40 @@ export default function App() {
           <Activity className="animate-blink-slow" style={{ width: '22px', height: '22px', color: '#EF4444' }} />
         </div>
 
-        {/* スタッツ */}
+        {/* スタッツ（画像通りの左右レイアウトに修正） */}
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px' }}>
-          <div style={{ backgroundColor: '#0F0505', borderRadius: '12px', padding: '16px', border: '1px solid #7F1D1D', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#2A0B0B', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Activity style={{ width: '20px', height: '20px', color: '#EF4444' }} />
-              </div>
+          
+          {/* 連続投与日数カード（左にアイコン、右にテキスト） */}
+          <div style={{ backgroundColor: '#0F0505', borderRadius: '12px', padding: '16px', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#2A0B0B', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Activity style={{ width: '22px', height: '22px', color: '#EF4444' }} />
             </div>
             <div>
-              <p style={{ fontSize: '10px', color: '#9CA3AF', fontWeight: 700, margin: 0, letterSpacing: '0.05em' }}>SURVIVAL STREAK</p>
-              <p style={{ fontSize: '10px', color: '#9CA3AF', margin: '1px 0 6px 0' }}>連続投与日数</p>
-              <p style={{ fontSize: '22px', fontWeight: 900, color: '#EF4444', margin: 0 }}>
-                {streakCount} <span style={{ fontSize: '12px', fontWeight: 700, color: '#9CA3AF' }}>DAYS</span>
+              <p style={{ fontSize: '9px', color: '#9CA3AF', fontWeight: 700, margin: 0, letterSpacing: '0.05em' }}>SURVIVAL STREAK</p>
+              <p style={{ fontSize: '9px', color: '#9CA3AF', margin: '1px 0 4px 0' }}>連続投与日数</p>
+              <p style={{ fontSize: '20px', fontWeight: 900, color: '#EF4444', margin: 0 }}>
+                {streakCount} <span style={{ fontSize: '11px', fontWeight: 700, color: '#9CA3AF' }}>DAYS</span>
               </p>
             </div>
           </div>
 
-          <div style={{ backgroundColor: '#0F0505', borderRadius: '12px', padding: '16px', border: '1px solid #7F1D1D', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#2A0B0B', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Syringe style={{ width: '20px', height: '20px', color: '#EF4444' }} />
-              </div>
+          {/* 通算投薬数カード（左にアイコン、右にテキスト） */}
+          <div style={{ backgroundColor: '#0F0505', borderRadius: '12px', padding: '16px', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#2A0B0B', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Syringe style={{ width: '22px', height: '22px', color: '#EF4444' }} />
             </div>
             <div>
-              <p style={{ fontSize: '10px', color: '#9CA3AF', fontWeight: 700, margin: 0, letterSpacing: '0.05em' }}>TOTAL DOSES</p>
-              <p style={{ fontSize: '10px', color: '#9CA3AF', margin: '1px 0 6px 0' }}>通算投薬数</p>
-              <p style={{ fontSize: '22px', fontWeight: 900, color: '#EF4444', margin: 0 }}>
-                {totalDoses} <span style={{ fontSize: '12px', fontWeight: 700, color: '#9CA3AF' }}>UNITS</span>
+              <p style={{ fontSize: '9px', color: '#9CA3AF', fontWeight: 700, margin: 0, letterSpacing: '0.05em' }}>TOTAL DOSES</p>
+              <p style={{ fontSize: '9px', color: '#9CA3AF', margin: '1px 0 4px 0' }}>通算投薬数</p>
+              <p style={{ fontSize: '20px', fontWeight: 900, color: '#EF4444', margin: 0 }}>
+                {totalDoses} <span style={{ fontSize: '11px', fontWeight: 700, color: '#9CA3AF' }}>UNITS</span>
               </p>
             </div>
           </div>
+
         </section>
 
-        {/* メインアクションカード */}
+        {/* メインアクションカード（DATEの🎯削除 ＆ 説明文すっきり化） */}
         <section style={{ backgroundColor: '#0F0505', borderRadius: '12px', padding: '18px', border: '1px solid #7F1D1D', position: 'relative' }}>
           <div style={{ position: 'absolute', top: '8px', left: '8px', width: '6px', height: '6px', borderTop: '2px solid #EF4444', borderLeft: '2px solid #EF4444' }} />
           <div style={{ position: 'absolute', top: '8px', right: '8px', width: '6px', height: '6px', borderTop: '2px solid #EF4444', borderRight: '2px solid #EF4444' }} />
@@ -403,10 +399,10 @@ export default function App() {
 
           <div style={{ textAlign: 'center', marginBottom: '14px' }}>
             <span style={{ fontSize: '11px', color: '#9CA3AF', border: '1px solid #7F1D1D', padding: '2px 8px', borderRadius: '4px', backgroundColor: '#1A0808' }}>
-              🎯 DATE: {realTodayYear}.{String(realTodayMonth).padStart(2, '0')}.{String(realTodayDay).padStart(2, '0')}
+              DATE: {realTodayYear}.{String(realTodayMonth).padStart(2, '0')}.{String(realTodayDay).padStart(2, '0')}
             </span>
             <p style={{ fontSize: '12px', color: '#D1D5DB', margin: '12px 0 14px 0', lineHeight: '1.5' }}>
-              感染進行を抑制するため、本日の投薬プロトコルを実行してください。（もう一度押すと取り消し可能）
+              感染進行を抑制するため、本日の投薬プロトコルを実行してください。
             </p>
 
             <button
